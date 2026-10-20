@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Internal roadmap
+guide.md
+
+# Build outputs
+dist/
+build/
+
+# Uploads and generated files
+uploads/
+backend/uploads/syllabi/*
+!backend/uploads/syllabi/.gitkeep
+backend/uploads/temp/*
+!backend/uploads/temp/.gitkeep
+*.pdf
+*.zip
+
+# Logs & local databases
+*.log
+*.sqlite
+*.db
+
+# OS and Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
