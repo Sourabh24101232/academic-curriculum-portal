@@ -2,6 +2,7 @@
   "name": "iiitbh-curriculum-portal-backend",
   "version": "1.0.0",
   "description": "Backend API for IIIT Bhagalpur Curriculum & Syllabus Portal",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

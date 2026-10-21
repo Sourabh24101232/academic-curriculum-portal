@@ -4,26 +4,26 @@
  */
 
 // Supported academic degree programmes
-const PROGRAMMES = Object.freeze(['BTech', 'MTech', 'PhD']);
+export const PROGRAMMES = Object.freeze(['BTech', 'MTech', 'PhD']);
 
 // B.Tech Branches officially established at IIIT Bhagalpur
-const BTECH_BRANCHES = Object.freeze(['CSE', 'MnC', 'ECE', 'MAE']);
+export const BTECH_BRANCHES = Object.freeze(['CSE', 'MnC', 'ECE', 'MAE']);
 
 // Programme to Branches mapping (Extensible: MTech and PhD can be populated later)
-const PROGRAMME_BRANCHES = Object.freeze({
+export const PROGRAMME_BRANCHES = Object.freeze({
   BTech: BTECH_BRANCHES,
   MTech: Object.freeze([]), // Reserved for future configuration
   PhD: Object.freeze([])     // Reserved for future configuration
 });
 
 // Standard Course Offerings Types
-const COURSE_TYPES = Object.freeze({
+export const COURSE_TYPES = Object.freeze({
   CORE: 'CORE',
   ELECTIVE: 'ELECTIVE'
 });
 
 // Default standard semesters list (B.Tech 8 semesters)
-const SEMESTERS = Object.freeze([
+export const SEMESTERS = Object.freeze([
   'Semester 1',
   'Semester 2',
   'Semester 3',
@@ -35,15 +35,15 @@ const SEMESTERS = Object.freeze([
 ]);
 
 // Programme-specific semester mappings (Extensible)
-const PROGRAMME_SEMESTERS = Object.freeze({
+export const PROGRAMME_SEMESTERS = Object.freeze({
   BTech: SEMESTERS,
   MTech: Object.freeze(['Semester 1', 'Semester 2', 'Semester 3', 'Semester 4']),
   PhD: Object.freeze(['Semester 1', 'Semester 2'])
 });
 
-const ALL_SEMESTERS_LABEL = 'All Semesters';
+export const ALL_SEMESTERS_LABEL = 'All Semesters';
 
-module.exports = {
+export default {
   PROGRAMMES,
   BTECH_BRANCHES,
   PROGRAMME_BRANCHES,
