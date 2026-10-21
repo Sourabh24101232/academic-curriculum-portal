@@ -1,0 +1,49 @@
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import morgan from 'morgan';
+import { CLIENT_URL, NODE_ENV } from './config/env.js';
+import AppError from './utils/AppError.js';
+import errorHandler from './middleware/errorHandler.js';
+
+const app = express();
+
+// 1. Security HTTP headers
+app.use(helmet());
+
+// 2. CORS configuration with credentials support for session cookies
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true
+  })
+);
+
+// 3. HTTP Request logger
+if (NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
+
+// 4. Request body parsers (10MB limit for JSON and URL-encoded payloads)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Health Check Probe
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    service: 'IIITBH Curriculum Portal API',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Catch-all route handler for undefined endpoints
+app.all('*', (req, res, next) => {
+  next(new AppError(`Cannot find route ${req.originalUrl} on this server`, 404));
+});
+
+// Centralized error handling middleware
+app.use(errorHandler);
+
+export default app;
