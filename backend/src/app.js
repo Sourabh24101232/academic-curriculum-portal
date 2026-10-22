@@ -4,6 +4,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import { CLIENT_URL, NODE_ENV } from './config/env.js';
 import sessionMiddleware from './config/session.js';
+import authRoutes from './routes/authRoutes.js';
 import AppError from './utils/AppError.js';
 import errorHandler from './middleware/errorHandler.js';
 
@@ -31,6 +32,9 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 5. Server-side session management
 app.use(sessionMiddleware);
+
+// 6. Faculty Admin Authentication Routes
+app.use('/api/admin', authRoutes);
 
 // Health Check Probe
 app.get('/api/health', (req, res) => {
