@@ -3,6 +3,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import morgan from 'morgan';
 import { CLIENT_URL, NODE_ENV } from './config/env.js';
+import sessionMiddleware from './config/session.js';
 import AppError from './utils/AppError.js';
 import errorHandler from './middleware/errorHandler.js';
 
@@ -27,6 +28,9 @@ if (NODE_ENV !== 'test') {
 // 4. Request body parsers (10MB limit for JSON and URL-encoded payloads)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 5. Server-side session management
+app.use(sessionMiddleware);
 
 // Health Check Probe
 app.get('/api/health', (req, res) => {
