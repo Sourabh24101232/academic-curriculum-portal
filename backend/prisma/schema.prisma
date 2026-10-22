@@ -1,0 +1,65 @@
+// IIIT Bhagalpur Curriculum & Syllabus Portal
+// Prisma Database Schema Definition
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum CourseType {
+  CORE
+  ELECTIVE
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
+model CourseOffering {
+  id                     String          @id @default(uuid())
+  courseCode             String          @map("course_code")
+  courseName             String          @map("course_name")
+  programme              String
+  batch                  String
+  branch                 String
+  semester               String
+  courseType             CourseType      @default(CORE) @map("course_type")
+  lecture                Int             @default(0)
+  tutorial               Int             @default(0)
+  practical              Int             @default(0)
+  credits                Int             @default(0)
+  courseObjectives       String          @db.Text @map("course_objectives")
+  moduleWiseSyllabusText String          @db.MediumText @map("module_wise_syllabus_text")
+  referenceBooksText     String          @db.Text @map("reference_books_text")
+  document               CourseDocument?
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+
+  @@index([programme, batch, branch, semester])
+  @@index([courseCode])
+  @@map("course_offerings")
+}
+
+model CourseDocument {
+  id               String         @id @default(uuid())
+  courseOfferingId String         @unique @map("course_offering_id")
+  courseOffering   CourseOffering @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+  originalFilename String         @map("original_filename")
+  storagePath      String         @map("storage_path")
+  mimeType         String         @default("application/pdf") @map("mime_type")
+  size             Int
+  checksum         String?
+  uploadedAt       DateTime       @default(now()) @map("uploaded_at")
+
+  @@map("course_documents")
+}
