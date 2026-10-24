@@ -10,7 +10,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
     "prisma:seed": "node prisma/seed.js",
-    "test:unit": "node src/utils/__tests__/moduleParser.test.js"
+    "test:unit": "node src/utils/__tests__/moduleParser.test.js",
+    "test:public": "node src/utils/__tests__/publicApis.test.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
