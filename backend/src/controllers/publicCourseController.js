@@ -72,7 +72,105 @@ export const getFilterOptions = async (req, res, next) => {
   }
 };
 
+/**
+ * Get Course Offerings with Reactive Filtering
+ * Public student endpoint; strictly enforces structured dropdown filters (Strictly NO search bar).
+ */
+export const getCourses = async (req, res, next) => {
+  try {
+    const { programme, batch, branch, semester } = req.query;
+
+    // 1. Mandatory Programme validation
+    if (!programme || typeof programme !== 'string' || !PROGRAMMES.includes(programme.trim())) {
+      return next(
+        new AppError(
+          `Programme selection is required and must be one of: ${PROGRAMMES.join(', ')}.`,
+          400
+        )
+      );
+    }
+
+    const cleanProgramme = programme.trim();
+
+    // 2. Construct filter object (ignoring any search keywords)
+    const whereClause = {
+      programme: cleanProgramme
+    };
+
+    if (batch && typeof batch === 'string' && batch.trim() !== '') {
+      whereClause.batch = batch.trim();
+    }
+
+    if (branch && typeof branch === 'string' && branch.trim() !== '') {
+      whereClause.branch = branch.trim();
+    }
+
+    // Only filter by semester if an individual semester is selected (omit on 'All Semesters')
+    if (
+      semester &&
+      typeof semester === 'string' &&
+      semester.trim() !== '' &&
+      semester.trim() !== ALL_SEMESTERS_LABEL
+    ) {
+      whereClause.semester = semester.trim();
+    }
+
+    // 3. Query autonomous course offerings from MySQL
+    const courseOfferings = await prisma.courseOffering.findMany({
+      where: whereClause,
+      select: {
+        id: true,
+        courseCode: true,
+        courseName: true,
+        programme: true,
+        batch: true,
+        branch: true,
+        semester: true,
+        courseType: true,
+        lecture: true,
+        tutorial: true,
+        practical: true,
+        credits: true,
+        document: {
+          select: {
+            id: true,
+            originalFilename: true
+          }
+        }
+      },
+      orderBy: [{ semester: 'asc' }, { courseCode: 'asc' }]
+    });
+
+    // 4. Format lightweight course listing payload for student table
+    const courses = courseOfferings.map((c) => ({
+      id: c.id,
+      courseCode: c.courseCode,
+      courseName: c.courseName,
+      programme: c.programme,
+      batch: c.batch,
+      branch: c.branch,
+      semester: c.semester,
+      courseType: c.courseType,
+      isElective: c.courseType === 'ELECTIVE',
+      lecture: c.lecture,
+      tutorial: c.tutorial,
+      practical: c.practical,
+      credits: c.credits,
+      hasOfficialPdf: Boolean(c.document)
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: courses.length,
+      courses
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   getProgrammes,
-  getFilterOptions
+  getFilterOptions,
+  getCourses
 };
