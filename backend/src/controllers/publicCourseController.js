@@ -1,5 +1,6 @@
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
+import { parseModuleSyllabus } from '../utils/moduleParser.js';
 import {
   PROGRAMMES,
   PROGRAMME_BATCHES,
@@ -169,8 +170,83 @@ export const getCourses = async (req, res, next) => {
   }
 };
 
+/**
+ * Get Course Offering Details by ID
+ * Public student endpoint; parses modules and reference literature into structured data.
+ */
+export const getCourseDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      return next(new AppError('Valid course offering ID is required.', 400));
+    }
+
+    const course = await prisma.courseOffering.findUnique({
+      where: { id },
+      include: {
+        document: {
+          select: {
+            id: true,
+            originalFilename: true,
+            size: true,
+            uploadedAt: true
+          }
+        }
+      }
+    });
+
+    if (!course) {
+      return next(new AppError('Course offering not found.', 404));
+    }
+
+    // Parse sequential module syllabus text
+    const parsedSyllabus = parseModuleSyllabus(course.moduleWiseSyllabusText);
+    const modules = parsedSyllabus.isValid ? parsedSyllabus.modules : [];
+    const totalHours = parsedSyllabus.isValid ? parsedSyllabus.totalHours : 0;
+
+    // Parse reference books text into clean list
+    const referenceBooks = course.referenceBooksText
+      ? course.referenceBooksText
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+      : [];
+
+    res.status(200).json({
+      success: true,
+      course: {
+        id: course.id,
+        courseCode: course.courseCode,
+        courseName: course.courseName,
+        programme: course.programme,
+        batch: course.batch,
+        branch: course.branch,
+        semester: course.semester,
+        courseType: course.courseType,
+        isElective: course.courseType === 'ELECTIVE',
+        creditsBreakdown: {
+          lecture: course.lecture,
+          tutorial: course.tutorial,
+          practical: course.practical,
+          totalCredits: course.credits
+        },
+        courseObjectives: course.courseObjectives,
+        modules,
+        totalHours,
+        referenceBooks,
+        hasOfficialPdf: Boolean(course.document),
+        pdfFilename: course.document ? course.document.originalFilename : null
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   getProgrammes,
   getFilterOptions,
-  getCourses
+  getCourses,
+  getCourseDetails
 };

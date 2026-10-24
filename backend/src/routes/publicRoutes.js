@@ -2,7 +2,8 @@ import express from 'express';
 import {
   getProgrammes,
   getFilterOptions,
-  getCourses
+  getCourses,
+  getCourseDetails
 } from '../controllers/publicCourseController.js';
 
 const router = express.Router();
@@ -11,8 +12,9 @@ const router = express.Router();
 router.get('/programmes', getProgrammes);
 router.get('/filters', getFilterOptions);
 
-// Public Course Offerings Endpoint (Reactive dropdown filters, Strictly NO search bar)
+// Public Course Offerings Endpoints
 router.get('/courses', getCourses);
+router.get('/courses/:id', getCourseDetails);
 
 export default router;
 export { router as publicRoutes };
