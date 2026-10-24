@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import { ALL_SEMESTERS_LABEL } from '../config/constants.js';
@@ -200,8 +201,140 @@ export const getCourseForEdit = async (req, res, next) => {
   }
 };
 
+/**
+ * Update Course Offering Handler
+ * Protected faculty endpoint; detects syllabus text changes against attached official PDF,
+ * triggers outdated-pdf warning, and directly updates database records.
+ */
+export const updateCourse = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      return next(new AppError('Valid course offering ID is required.', 400));
+    }
+
+    const existingCourse = await prisma.courseOffering.findUnique({
+      where: { id },
+      include: {
+        document: {
+          select: {
+            id: true,
+            originalFilename: true
+          }
+        }
+      }
+    });
+
+    if (!existingCourse) {
+      return next(new AppError('Course offering not found.', 404));
+    }
+
+    const {
+      courseCode,
+      courseName,
+      programme,
+      batch,
+      branch,
+      semester,
+      courseType,
+      lecture,
+      tutorial,
+      practical,
+      credits,
+      courseObjectives,
+      moduleWiseSyllabusText,
+      referenceBooksText
+    } = req.body;
+
+    // Detect if syllabus text was modified
+    const syllabusModified =
+      existingCourse.moduleWiseSyllabusText.trim() !== moduleWiseSyllabusText.trim();
+
+    // Trigger outdated warning if syllabus changed and an official PDF is currently attached
+    const outdatedPdfWarning = Boolean(syllabusModified && existingCourse.document);
+
+    const updatedCourse = await prisma.courseOffering.update({
+      where: { id },
+      data: {
+        courseCode,
+        courseName,
+        programme,
+        batch,
+        branch,
+        semester,
+        courseType,
+        lecture,
+        tutorial,
+        practical,
+        credits,
+        courseObjectives,
+        moduleWiseSyllabusText,
+        referenceBooksText
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Course offering updated successfully.',
+      outdatedPdfWarning,
+      course: updatedCourse
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Delete Course Offering Handler
+ * Protected faculty endpoint; deletes course offering record and cleans up attached physical PDF file from disk.
+ */
+export const deleteCourse = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      return next(new AppError('Valid course offering ID is required.', 400));
+    }
+
+    const course = await prisma.courseOffering.findUnique({
+      where: { id },
+      include: {
+        document: true
+      }
+    });
+
+    if (!course) {
+      return next(new AppError('Course offering not found.', 404));
+    }
+
+    // Safely delete physical PDF file if present on disk
+    if (course.document?.storagePath && fs.existsSync(course.document.storagePath)) {
+      try {
+        fs.unlinkSync(course.document.storagePath);
+      } catch (fileErr) {
+        console.error(`[WARNING] Failed to remove physical PDF file: ${course.document.storagePath}`, fileErr);
+      }
+    }
+
+    // Delete course offering from database (CourseDocument cascades automatically via Prisma schema)
+    await prisma.courseOffering.delete({
+      where: { id }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Course offering deleted successfully.'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createCourse,
   getAdminCourses,
-  getCourseForEdit
+  getCourseForEdit,
+  updateCourse,
+  deleteCourse
 };
