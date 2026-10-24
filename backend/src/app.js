@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { CLIENT_URL, NODE_ENV } from './config/env.js';
 import sessionMiddleware from './config/session.js';
 import authRoutes from './routes/authRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 import publicRoutes from './routes/publicRoutes.js';
 import AppError from './utils/AppError.js';
 import errorHandler from './middleware/errorHandler.js';
@@ -37,8 +38,9 @@ app.use(sessionMiddleware);
 // 6. Public Student Academic Routes
 app.use('/api', publicRoutes);
 
-// 7. Faculty Admin Authentication Routes
+// 7. Faculty Admin Authentication & Management Routes
 app.use('/api/admin', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health Check Probe
 app.get('/api/health', (req, res) => {
