@@ -11,7 +11,8 @@
     "prisma:generate": "prisma generate",
     "prisma:seed": "node prisma/seed.js",
     "test:unit": "node src/utils/__tests__/moduleParser.test.js",
-    "test:public": "node src/utils/__tests__/publicApis.test.js"
+    "test:public": "node src/utils/__tests__/publicApis.test.js",
+    "test:document": "node src/utils/__tests__/documentApis.test.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

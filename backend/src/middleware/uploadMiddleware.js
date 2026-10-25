@@ -32,6 +32,14 @@ const multerSinglePdf = upload.single('pdfFile');
 export const uploadPdfMiddleware = (req, res, next) => {
   multerSinglePdf(req, res, (err) => {
     if (err) {
+      if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return next(
+            new AppError('File size exceeds 10 MB limit. Please upload a smaller document.', 400)
+          );
+        }
+        return next(new AppError(`Upload error: ${err.message}`, 400));
+      }
       return next(err);
     }
 

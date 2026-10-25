@@ -7,6 +7,7 @@ import sessionMiddleware from './config/session.js';
 import authRoutes from './routes/authRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import publicRoutes from './routes/publicRoutes.js';
+import documentRoutes from './routes/documentRoutes.js';
 import AppError from './utils/AppError.js';
 import errorHandler from './middleware/errorHandler.js';
 
@@ -38,7 +39,10 @@ app.use(sessionMiddleware);
 // 6. Public Student Academic Routes
 app.use('/api', publicRoutes);
 
-// 7. Faculty Admin Authentication & Management Routes
+// 7. Course Document Routes (Public streaming & Faculty uploads)
+app.use('/api', documentRoutes);
+
+// 8. Faculty Admin Authentication & Management Routes
 app.use('/api/admin', authRoutes);
 app.use('/api/admin', adminRoutes);
 
