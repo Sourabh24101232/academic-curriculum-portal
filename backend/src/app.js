@@ -36,11 +36,11 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // 5. Server-side session management
 app.use(sessionMiddleware);
 
-// 6. Public Student Academic Routes
-app.use('/api', publicRoutes);
-
-// 7. Course Document Routes (Public streaming & Faculty uploads)
+// 6. Course Document Routes (Public streaming, bulk zip & Faculty uploads)
 app.use('/api', documentRoutes);
+
+// 7. Public Student Academic Routes
+app.use('/api', publicRoutes);
 
 // 8. Faculty Admin Authentication & Management Routes
 app.use('/api/admin', authRoutes);

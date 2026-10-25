@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import prisma from '../config/prisma.js';
 import AppError from '../utils/AppError.js';
 import storageService from '../services/storageService.js';
+import { generateSyllabiArchive } from '../services/zipService.js';
+import { PROGRAMMES, ALL_SEMESTERS_LABEL } from '../config/constants.js';
 
 /**
  * Upload Course Syllabus PDF
@@ -127,7 +129,107 @@ export const streamCoursePdf = async (req, res, next) => {
   }
 };
 
+/**
+ * Download All Syllabi as a Filtered ZIP Archive
+ * Bundles authentic physical PDFs and an audit manifest (README_SYLLABI.txt).
+ * Streaming pipeline directly piped to the client response.
+ */
+export const downloadAllSyllabiZip = async (req, res, next) => {
+  try {
+    const { programme, batch, branch, semester } = req.query;
+
+    // 1. Mandatory Programme parameter validation
+    if (!programme || typeof programme !== 'string' || !PROGRAMMES.includes(programme.trim())) {
+      return next(
+        new AppError(
+          `Programme selection is required and must be one of: ${PROGRAMMES.join(', ')}.`,
+          400
+        )
+      );
+    }
+
+    const cleanProgramme = programme.trim();
+
+    // 2. Build Prisma filter conditions matching active dropdowns
+    const whereClause = {
+      programme: cleanProgramme
+    };
+
+    if (batch && typeof batch === 'string' && batch.trim() !== '') {
+      whereClause.batch = batch.trim();
+    }
+
+    if (branch && typeof branch === 'string' && branch.trim() !== '') {
+      whereClause.branch = branch.trim();
+    }
+
+    if (
+      semester &&
+      typeof semester === 'string' &&
+      semester.trim() !== '' &&
+      semester.trim() !== ALL_SEMESTERS_LABEL
+    ) {
+      whereClause.semester = semester.trim();
+    }
+
+    // 3. Query all matching offerings with attached document records
+    const courses = await prisma.courseOffering.findMany({
+      where: whereClause,
+      include: {
+        document: true
+      },
+      orderBy: [{ semester: 'asc' }, { courseCode: 'asc' }]
+    });
+
+    if (!courses || courses.length === 0) {
+      return next(new AppError('No courses found matching selected filters.', 404));
+    }
+
+    // 4. Determine institutional archive filename
+    const parts = ['IIITBH', 'Syllabi', cleanProgramme];
+    if (whereClause.branch) parts.push(whereClause.branch);
+    if (whereClause.semester) {
+      parts.push(whereClause.semester.replace(/\s+/g, ''));
+    } else if (semester === ALL_SEMESTERS_LABEL) {
+      parts.push('AllSemesters');
+    }
+    const zipFilename = `${parts.join('_')}.zip`;
+
+    // 5. Configure response headers for streaming attachment
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="${encodeURIComponent(zipFilename)}"`
+    );
+
+    // 6. Generate archiver instance
+    const archive = generateSyllabiArchive({
+      courses,
+      filterParams: {
+        programme: cleanProgramme,
+        batch: whereClause.batch,
+        branch: whereClause.branch,
+        semester: semester || 'All Semesters'
+      }
+    });
+
+    archive.on('error', (err) => {
+      if (!res.headersSent) {
+        return next(new AppError('Failed to generate ZIP archive.', 500));
+      }
+      console.error('[ZIP_ARCHIVE_STREAM_ERROR]', err);
+    });
+
+    // 7. Pipe directly into HTTP response and finalize
+    archive.pipe(res);
+    await archive.finalize();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   uploadCoursePdf,
-  streamCoursePdf
+  streamCoursePdf,
+  downloadAllSyllabiZip
 };
