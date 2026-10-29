@@ -1,119 +1,89 @@
 /**
- * Strict Module-Wise Syllabus Parser Utility
- * Enforces institutional standard format: Module <N>: <Topics Covered> (<Hours>)
+ * Single-Box Syllabus Parser Utility
+ * Parses raw multiline syllabus text written in one box into clean syllabus representation
+ * and extracts individual module sections when formatted with 'Module <N>:' headers.
  * Indian Institute of Information Technology Bhagalpur
  */
 
-const MODULE_REGEX = /^Module\s+(\d+)\s*:\s*(.+?)\s*\((\d+)\)\s*$/;
-
 /**
- * Parses raw multiline module syllabus text into structured module objects.
+ * Parses raw multiline syllabus text entered in a single box.
+ * Supports modules separated by blank lines and flexible headings without requiring per-module hours.
+ * 
  * @param {string} text - Raw multiline syllabus input
- * @returns {Object} Parsing result containing modules array and total hours or exact error details
+ * @returns {Object} Parsing result containing valid status, syllabusText, modules array, and optional totalHours
  */
 export const parseModuleSyllabus = (text) => {
   if (!text || typeof text !== 'string' || text.trim() === '') {
     return {
       isValid: false,
       line: 1,
-      error: 'Syllabus text cannot be empty. Please provide module breakdown.'
+      error: 'Syllabus text cannot be empty. Please provide course syllabus.'
     };
   }
 
-  // Normalize line breaks (\r\n -> \n) and split into lines
-  const rawLines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  // Normalize line breaks (\r\n -> \n) and trim leading/trailing whitespace
+  const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
 
-  // Safely ignore completely blank lines only at the beginning and end
-  let startIdx = 0;
-  while (startIdx < rawLines.length && rawLines[startIdx].trim() === '') {
-    startIdx++;
-  }
-
-  let endIdx = rawLines.length - 1;
-  while (endIdx >= startIdx && rawLines[endIdx].trim() === '') {
-    endIdx--;
-  }
-
-  if (startIdx > endIdx) {
+  if (normalizedText === '') {
     return {
       isValid: false,
       line: 1,
-      error: 'Syllabus text cannot be empty. Please provide module breakdown.'
+      error: 'Syllabus text cannot be empty. Please provide course syllabus.'
     };
   }
 
+  // Split into module blocks separated by one or more blank lines
+  const blocks = normalizedText.split(/\n\s*\n+/);
   const parsedModules = [];
-  let expectedModuleNumber = 1;
   let totalHours = 0;
+  let hasAnyHours = false;
+  let currentModuleNumber = 1;
 
-  for (let i = startIdx; i <= endIdx; i++) {
-    const currentLineNumber = i + 1;
-    const rawLine = rawLines[i];
-    const trimmedLine = rawLine.trim();
+  for (const block of blocks) {
+    const trimmedBlock = block.trim();
+    if (!trimmedBlock) continue;
 
-    // Blank lines in the middle are not allowed
-    if (trimmedLine === '') {
-      return {
-        isValid: false,
-        line: currentLineNumber,
-        error: `Blank line encountered on line ${currentLineNumber}. Each line must represent a consecutive module.`
-      };
+    // Matches 'Module 01: Heading' or 'Module 1: Heading\nTopics...'
+    const match = trimmedBlock.match(/^Module\s+(\d+)[:\s-]*([^\n]*)(?:\n([\s\S]*))?$/i);
+    if (match) {
+      const moduleNum = parseInt(match[1], 10);
+      let heading = match[2] ? match[2].trim() : '';
+      const body = match[3] ? match[3].trim() : '';
+
+      // Check if heading or body has optional hours in parentheses, e.g. (6)
+      let hours = null;
+      const hoursMatch = heading.match(/\((\d+)\)\s*$/);
+      if (hoursMatch) {
+        hours = parseInt(hoursMatch[1], 10);
+        heading = heading.replace(/\((\d+)\)\s*$/, '').trim();
+        hasAnyHours = true;
+        totalHours += hours;
+      }
+
+      parsedModules.push({
+        moduleNumber: moduleNum,
+        title: `Module ${moduleNum}${heading ? `: ${heading}` : ''}`,
+        topics: body || heading,
+        hours
+      });
+      currentModuleNumber = moduleNum + 1;
+    } else {
+      // Freeform block or non-prefixed module
+      parsedModules.push({
+        moduleNumber: currentModuleNumber,
+        title: `Module ${currentModuleNumber}`,
+        topics: trimmedBlock,
+        hours: null
+      });
+      currentModuleNumber++;
     }
-
-    const match = trimmedLine.match(MODULE_REGEX);
-    if (!match) {
-      return {
-        isValid: false,
-        line: currentLineNumber,
-        error: `Syntax error on line ${currentLineNumber}: '${rawLine}'. Expected format: 'Module <N>: Topics Covered (Hours)'`
-      };
-    }
-
-    const moduleNumber = parseInt(match[1], 10);
-    const topics = match[2].trim();
-    const hours = parseInt(match[3], 10);
-
-    if (!topics) {
-      return {
-        isValid: false,
-        line: currentLineNumber,
-        error: `Missing topics list on line ${currentLineNumber}: Module must specify topics covered.`
-      };
-    }
-
-    // Enforce sequential ordering (1, 2, 3...)
-    if (moduleNumber !== expectedModuleNumber) {
-      return {
-        isValid: false,
-        line: currentLineNumber,
-        error: `Sequential module ordering error on line ${currentLineNumber}: Expected 'Module ${expectedModuleNumber}', but found 'Module ${moduleNumber}'.`
-      };
-    }
-
-    // Enforce positive integer hours
-    if (isNaN(hours) || hours <= 0) {
-      return {
-        isValid: false,
-        line: currentLineNumber,
-        error: `Invalid hours on line ${currentLineNumber}: Hours must be a positive integer greater than 0.`
-      };
-    }
-
-    parsedModules.push({
-      moduleNumber,
-      title: `Module ${moduleNumber}`,
-      topics,
-      hours
-    });
-
-    totalHours += hours;
-    expectedModuleNumber++;
   }
 
   return {
     isValid: true,
+    syllabusText: normalizedText,
     modules: parsedModules,
-    totalHours
+    totalHours: hasAnyHours ? totalHours : null
   };
 };
 

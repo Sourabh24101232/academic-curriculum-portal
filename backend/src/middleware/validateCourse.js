@@ -88,7 +88,7 @@ export const validateCoursePayload = (req, res, next) => {
     return next(new AppError(errors[0], 400, errors));
   }
 
-  // 3. Module-Wise Syllabus Text Validation
+  // 3. Single-Box Syllabus Text Validation
   const parsedSyllabus = parseModuleSyllabus(moduleWiseSyllabusText);
   if (!parsedSyllabus.isValid) {
     return next(new AppError(parsedSyllabus.error, 400, [parsedSyllabus.error]));

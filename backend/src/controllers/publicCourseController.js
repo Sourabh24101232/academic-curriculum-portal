@@ -232,6 +232,7 @@ export const getCourseDetails = async (req, res, next) => {
           totalCredits: course.credits
         },
         courseObjectives: course.courseObjectives,
+        syllabusText: course.moduleWiseSyllabusText,
         modules,
         totalHours,
         referenceBooks,

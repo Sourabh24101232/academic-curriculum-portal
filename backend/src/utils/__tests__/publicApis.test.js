@@ -138,7 +138,7 @@ async function main() {
     assert.strictEqual(data.course.creditsBreakdown.totalCredits, 3);
     assert.ok(Array.isArray(data.course.modules));
     assert.strictEqual(data.course.modules.length, 5);
-    assert.strictEqual(data.course.totalHours, 40);
+    assert.ok(data.course.syllabusText.includes('Module 1: Overview of DBMS'));
     assert.strictEqual(data.course.modules[0].moduleNumber, 1);
     assert.ok(Array.isArray(data.course.referenceBooks));
     assert.ok(data.course.referenceBooks.length >= 2);
