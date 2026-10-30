@@ -1,7 +1,8 @@
 import multer from 'multer';
 import {
   generateCourseTemplateBuffer,
-  parseAndValidateExcelBuffer
+  parseAndValidateExcelBuffer,
+  commitBulkImport
 } from '../services/excelService.js';
 import { MAX_FILE_SIZE_BYTES } from '../config/env.js';
 import AppError from '../utils/AppError.js';
@@ -106,8 +107,28 @@ export const previewBulkCourses = async (req, res, next) => {
   }
 };
 
+/**
+ * Confirm Bulk Excel Course Import (Transactional Commit)
+ * POST /api/admin/courses/bulk-confirm
+ * Protected by requireAdmin
+ */
+export const confirmBulkImport = async (req, res, next) => {
+  try {
+    const { rows, duplicateAction, importStrategy } = req.body;
+    const result = await commitBulkImport({
+      rows,
+      duplicateAction,
+      importStrategy
+    });
+    return res.status(200).json(result);
+  } catch (error) {
+    return next(error instanceof AppError ? error : new AppError(error.message, 500));
+  }
+};
+
 export default {
   downloadCourseTemplate,
   uploadExcelMiddleware,
-  previewBulkCourses
+  previewBulkCourses,
+  confirmBulkImport
 };

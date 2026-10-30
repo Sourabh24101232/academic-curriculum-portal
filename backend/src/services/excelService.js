@@ -392,7 +392,167 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
   };
 };
 
+/**
+ * Commit Bulk Course Import in an atomic transaction
+ *
+ * @param {Object} options
+ * @param {Array} options.rows - Course rows from dry-run preview
+ * @param {string} [options.duplicateAction='SKIP'] - 'SKIP' or 'UPDATE'
+ * @param {string} [options.importStrategy='IMPORT_VALID_ONLY'] - 'IMPORT_VALID_ONLY' or 'CANCEL_ON_ERROR'
+ * @returns {Promise<Object>} Execution report { success, importedCount, updatedCount, skippedCount, failedCount }
+ */
+export const commitBulkImport = async ({
+  rows,
+  duplicateAction = 'SKIP',
+  importStrategy = 'IMPORT_VALID_ONLY'
+}) => {
+  if (!rows || !Array.isArray(rows) || rows.length === 0) {
+    throw new AppError('No course rows provided for bulk import.', 400);
+  }
+
+  const normalizedDupAction = String(duplicateAction || 'SKIP').toUpperCase();
+  if (normalizedDupAction !== 'SKIP' && normalizedDupAction !== 'UPDATE') {
+    throw new AppError("Invalid duplicateAction. Must be either 'SKIP' or 'UPDATE'.", 400);
+  }
+
+  const normalizedStrategy = String(importStrategy || 'IMPORT_VALID_ONLY').toUpperCase();
+  if (normalizedStrategy !== 'IMPORT_VALID_ONLY' && normalizedStrategy !== 'CANCEL_ON_ERROR') {
+    throw new AppError(
+      "Invalid importStrategy. Must be either 'IMPORT_VALID_ONLY' or 'CANCEL_ON_ERROR'.",
+      400
+    );
+  }
+
+  // Check for error rows
+  const hasErrors = rows.some(
+    (r) => r.status === 'ERROR' || (Array.isArray(r.errors) && r.errors.length > 0)
+  );
+
+  if (normalizedStrategy === 'CANCEL_ON_ERROR' && hasErrors) {
+    throw new AppError(
+      'Bulk import aborted: One or more rows contain validation errors and importStrategy is set to CANCEL_ON_ERROR.',
+      400
+    );
+  }
+
+  // Filter rows to process
+  const validRows = rows.filter(
+    (r) => r.status === 'VALID' || (!r.status && (!r.errors || r.errors.length === 0))
+  );
+
+  const errorRows = rows.filter(
+    (r) => r.status === 'ERROR' || (Array.isArray(r.errors) && r.errors.length > 0)
+  );
+
+  const failedCount = errorRows.length;
+
+  // Execute in atomic Prisma transaction
+  const result = await prisma.$transaction(async (tx) => {
+    let importedCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+
+    for (const row of validRows) {
+      const courseCode = String(row.courseCode || row.course_code || '').trim();
+      const courseName = String(row.courseName || row.course_name || '').trim();
+      const programme = String(row.programme || '').trim();
+      const batch = String(row.batch || '').trim();
+      const branch = String(row.branch || '').trim();
+      const semester = String(row.semester || '').trim();
+      const courseType = String(row.courseType || row.course_type || 'CORE').toUpperCase();
+      const lecture = parseInt(row.lecture ?? 0, 10) || 0;
+      const tutorial = parseInt(row.tutorial ?? 0, 10) || 0;
+      const practical = parseInt(row.practical ?? 0, 10) || 0;
+      const credits = parseInt(row.credits ?? 0, 10) || 0;
+      const courseObjectives = String(row.courseObjectives || row.course_objectives || '').trim();
+      const moduleWiseSyllabusText = String(
+        row.moduleWiseSyllabusText || row.module_wise_syllabus || ''
+      ).trim();
+      const referenceBooksText = String(
+        row.referenceBooksText || row.reference_books || ''
+      ).trim();
+
+      // Find existing offering
+      let existingRecord = null;
+      if (row.existingCourseId) {
+        existingRecord = await tx.courseOffering.findUnique({
+          where: { id: row.existingCourseId }
+        });
+      }
+
+      if (!existingRecord && courseCode && programme && batch && branch && semester) {
+        existingRecord = await tx.courseOffering.findFirst({
+          where: {
+            courseCode,
+            programme,
+            batch,
+            branch,
+            semester
+          }
+        });
+      }
+
+      if (existingRecord) {
+        if (normalizedDupAction === 'SKIP') {
+          skippedCount++;
+        } else if (normalizedDupAction === 'UPDATE') {
+          await tx.courseOffering.update({
+            where: { id: existingRecord.id },
+            data: {
+              courseName,
+              courseType,
+              lecture,
+              tutorial,
+              practical,
+              credits,
+              courseObjectives,
+              moduleWiseSyllabusText,
+              referenceBooksText
+            }
+          });
+          updatedCount++;
+        }
+      } else {
+        await tx.courseOffering.create({
+          data: {
+            courseCode,
+            courseName,
+            programme,
+            batch,
+            branch,
+            semester,
+            courseType,
+            lecture,
+            tutorial,
+            practical,
+            credits,
+            courseObjectives,
+            moduleWiseSyllabusText,
+            referenceBooksText
+          }
+        });
+        importedCount++;
+      }
+    }
+
+    return {
+      importedCount,
+      updatedCount,
+      skippedCount
+    };
+  });
+
+  return {
+    success: true,
+    importedCount: result.importedCount,
+    updatedCount: result.updatedCount,
+    skippedCount: result.skippedCount,
+    failedCount
+  };
+};
+
 export default {
   generateCourseTemplateBuffer,
-  parseAndValidateExcelBuffer
+  parseAndValidateExcelBuffer,
+  commitBulkImport
 };

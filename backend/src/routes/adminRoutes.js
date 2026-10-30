@@ -11,7 +11,8 @@ import { validateCoursePayload } from '../middleware/validateCourse.js';
 import {
   downloadCourseTemplate,
   uploadExcelMiddleware,
-  previewBulkCourses
+  previewBulkCourses,
+  confirmBulkImport
 } from '../controllers/excelController.js';
 
 const router = express.Router();
@@ -24,6 +25,7 @@ router.post(
   uploadExcelMiddleware,
   previewBulkCourses
 );
+router.post('/courses/bulk-confirm', requireAdmin, confirmBulkImport);
 
 // Faculty Course Management Endpoints
 router.post('/courses', requireAdmin, validateCoursePayload, createCourse);
