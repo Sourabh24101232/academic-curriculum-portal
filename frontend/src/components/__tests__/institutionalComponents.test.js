@@ -88,9 +88,14 @@ console.log('--- Testing Step 30 Institutional Components ---');
   console.log('✓ Footer: successfully rendered with 4-column layout, contact info, and copyright');
 }
 
+import { MemoryRouter } from 'react-router-dom';
+import { AppRoutes } from '../../App.jsx';
+
 // 5. Integrated App Test
 {
-  const html = renderToString(React.createElement(App));
+  const html = renderToString(
+    React.createElement(MemoryRouter, { initialEntries: ['/'] }, React.createElement(AppRoutes))
+  );
   assert(html.includes('Indian Institute of Information Technology Bhagalpur'), 'App should contain Header');
   assert(html.includes('Ministry of Education'), 'App should contain TopBar');
   assert(html.includes('Academic Curriculum'), 'App should contain CampusBanner');
@@ -99,3 +104,4 @@ console.log('--- Testing Step 30 Institutional Components ---');
 }
 
 console.log('--- ALL STEP 30 COMPONENT TESTS PASSED ---');
+
