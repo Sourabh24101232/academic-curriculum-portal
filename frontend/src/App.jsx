@@ -6,6 +6,9 @@ import StudentLayout from './components/common/StudentLayout';
 import FacultyLayout from './components/common/FacultyLayout';
 import LoginLayout from './components/common/LoginLayout';
 
+// Student Pages
+import CurriculumPage from './pages/student/CurriculumPage';
+
 /**
  * Placeholder Views for Routing Architecture
  * (These will be populated in subsequent steps: 34, 35, 37, 38)
@@ -126,8 +129,8 @@ export const AppRoutes = () => (
   <Routes>
     {/* 1. Public Student Routes (StudentLayout: TopBar + Header + Banner + Outlet + Footer) */}
     <Route element={<StudentLayout />}>
-      <Route path="/" element={<StudentHomePlaceholder />} />
-      <Route path="/curriculum" element={<StudentHomePlaceholder />} />
+      <Route path="/" element={<CurriculumPage />} />
+      <Route path="/curriculum" element={<CurriculumPage />} />
       <Route path="/courses/:id" element={<CourseDetailsPlaceholder />} />
     </Route>
 
