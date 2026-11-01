@@ -8,6 +8,7 @@ import LoginLayout from './components/common/LoginLayout';
 
 // Student Pages
 import CurriculumPage from './pages/student/CurriculumPage';
+import CourseDetailsPage from './pages/student/CourseDetailsPage';
 
 /**
  * Placeholder Views for Routing Architecture
@@ -131,7 +132,7 @@ export const AppRoutes = () => (
     <Route element={<StudentLayout />}>
       <Route path="/" element={<CurriculumPage />} />
       <Route path="/curriculum" element={<CurriculumPage />} />
-      <Route path="/courses/:id" element={<CourseDetailsPlaceholder />} />
+      <Route path="/courses/:id" element={<CourseDetailsPage />} />
     </Route>
 
     {/* 2. Faculty Routes (FacultyLayout: TopBar + Header + Horizontal Nav + Outlet + Footer; NO SIDEBAR) */}
