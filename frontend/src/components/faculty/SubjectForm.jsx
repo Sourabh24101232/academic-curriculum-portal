@@ -8,8 +8,11 @@ import {
   Loader2,
   Info,
   BookOpen,
-  FileText
+  FileText,
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
+import { adminApi } from '../../services/api';
 
 const DEFAULT_PROGRAMMES = ['BTech', 'MTech', 'PhD'];
 const DEFAULT_BATCHES = [
@@ -114,7 +117,8 @@ const SubjectForm = ({
   isEdit = false,
   onSubmit,
   isSubmitting = false,
-  outdatedPdfWarning = false
+  outdatedPdfWarning = false,
+  onOpenExcelModal
 }) => {
   const navigate = useNavigate();
 
@@ -584,6 +588,48 @@ Module 5: Indexing Structures, B-Trees, and Query Optimization (6)`}
           className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
         />
       </div>
+
+      {/* Excel Bulk Upload Section (Directly below Reference Books) */}
+      {!isEdit && onOpenExcelModal && (
+        <div className="bg-white rounded-lg border-2 border-dashed border-institute-navy/20 p-4 sm:p-6 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+            <div className="flex items-center gap-2">
+              <FileSpreadsheet className="w-5 h-5 text-institute-navy" />
+              <div>
+                <h3 className="text-sm font-bold uppercase tracking-wider text-institute-navy">
+                  Bulk Curriculum Import (Excel)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Prefer batch uploading multiple subjects at once instead of manual entry?
+                </p>
+              </div>
+            </div>
+            <a
+              href={adminApi.getTemplateUrl()}
+              download="IIITBH_Course_Import_Template.xlsx"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-300 text-slate-700 text-xs font-semibold rounded shadow-sm transition-colors"
+            >
+              <Download className="w-3.5 h-3.5 text-institute-gold" />
+              <span>Download Format (Excel)</span>
+            </a>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50 p-4 rounded-md">
+            <div className="text-xs text-slate-600">
+              <p className="font-semibold text-institute-navy mb-0.5">Two-Phase Safe Ingestion:</p>
+              <p>Upload your spreadsheet to run an instant dry-run preview, verify module syntax, and review duplicate offerings before committing.</p>
+            </div>
+            <button
+              type="button"
+              onClick={onOpenExcelModal}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-institute-navy hover:bg-institute-navyDark text-white text-xs font-semibold rounded transition-colors shadow whitespace-nowrap"
+            >
+              <UploadCloud className="w-4 h-4 text-institute-gold" />
+              <span>Bulk Import via Excel</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 6. Official PDF File Upload Picker */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">

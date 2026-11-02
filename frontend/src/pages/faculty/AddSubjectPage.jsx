@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BookPlus } from 'lucide-react';
 import { adminApi } from '../../services/api';
 import SubjectForm from '../../components/faculty/SubjectForm';
+import ExcelImportModal from '../../components/faculty/ExcelImportModal';
 
 /**
  * AddSubjectPage Component
@@ -17,6 +18,7 @@ import SubjectForm from '../../components/faculty/SubjectForm';
 const AddSubjectPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExcelModalOpen, setIsExcelModalOpen] = useState(false);
 
   const handleCreateSubject = async (coursePayload, pdfFile) => {
     try {
@@ -79,6 +81,14 @@ const AddSubjectPage = () => {
         onSubmit={handleCreateSubject}
         isEdit={false}
         isSubmitting={isSubmitting}
+        onOpenExcelModal={() => setIsExcelModalOpen(true)}
+      />
+
+      {/* 4. Bulk Excel Import Modal */}
+      <ExcelImportModal
+        isOpen={isExcelModalOpen}
+        onClose={() => setIsExcelModalOpen(false)}
+        onSuccess={() => navigate('/faculty/courses')}
       />
 
     </div>

@@ -19,6 +19,7 @@ import LoginPage from './pages/faculty/LoginPage';
 import ManageCoursesPage from './pages/faculty/ManageCoursesPage';
 import AddSubjectPage from './pages/faculty/AddSubjectPage';
 import EditSubjectPage from './pages/faculty/EditSubjectPage';
+import BulkUploadPage from './pages/faculty/BulkUploadPage';
 
 /**
  * Placeholder Views for Routing Architecture
@@ -151,7 +152,7 @@ export const AppRoutes = () => (
         <Route path="/faculty/courses" element={<ManageCoursesPage />} />
         <Route path="/faculty/courses/new" element={<AddSubjectPage />} />
         <Route path="/faculty/courses/:id/edit" element={<EditSubjectPage />} />
-        <Route path="/faculty/bulk-upload" element={<FacultyUploadPlaceholder />} />
+        <Route path="/faculty/bulk-upload" element={<BulkUploadPage />} />
         <Route path="/faculty/audit-logs" element={<FacultyAuditPlaceholder />} />
       </Route>
     </Route>
