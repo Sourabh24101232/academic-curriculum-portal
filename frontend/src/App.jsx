@@ -14,6 +14,9 @@ import { AuthProvider } from './context/AuthContext';
 import CurriculumPage from './pages/student/CurriculumPage';
 import CourseDetailsPage from './pages/student/CourseDetailsPage';
 
+// Faculty & Authentication Pages
+import LoginPage from './pages/faculty/LoginPage';
+
 /**
  * Placeholder Views for Routing Architecture
  * (These will be populated in subsequent steps: 34, 35, 37, 38)
@@ -150,8 +153,8 @@ export const AppRoutes = () => (
 
     {/* 3. Authentication Routes (LoginLayout: Header + Centered Outlet; STRICTLY NO FOOTER) */}
     <Route element={<LoginLayout />}>
-      <Route path="/login" element={<LoginPlaceholder />} />
-      <Route path="/faculty/login" element={<LoginPlaceholder />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/faculty/login" element={<LoginPage />} />
     </Route>
 
     {/* 4. Wildcard Catch-All: Redirect to Home */}

@@ -218,3 +218,4 @@ const Header = () => {
 };
 
 export default Header;
+export { IIITBhagalpurSeal, AzadiMahotsavLogo };
