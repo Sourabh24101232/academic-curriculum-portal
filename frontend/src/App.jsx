@@ -5,6 +5,10 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useParams } from 'react-r
 import StudentLayout from './components/common/StudentLayout';
 import FacultyLayout from './components/common/FacultyLayout';
 import LoginLayout from './components/common/LoginLayout';
+import ProtectedRoute from './components/common/ProtectedRoute';
+
+// Authentication Context Provider
+import { AuthProvider } from './context/AuthContext';
 
 // Student Pages
 import CurriculumPage from './pages/student/CurriculumPage';
@@ -135,11 +139,13 @@ export const AppRoutes = () => (
       <Route path="/courses/:id" element={<CourseDetailsPage />} />
     </Route>
 
-    {/* 2. Faculty Routes (FacultyLayout: TopBar + Header + Horizontal Nav + Outlet + Footer; NO SIDEBAR) */}
-    <Route element={<FacultyLayout />}>
-      <Route path="/faculty/courses" element={<FacultyCoursesPlaceholder />} />
-      <Route path="/faculty/bulk-upload" element={<FacultyUploadPlaceholder />} />
-      <Route path="/faculty/audit-logs" element={<FacultyAuditPlaceholder />} />
+    {/* 2. Faculty Routes Guarded by ProtectedRoute (FacultyLayout: TopBar + Header + Horizontal Nav + Outlet + Footer; NO SIDEBAR) */}
+    <Route element={<ProtectedRoute />}>
+      <Route element={<FacultyLayout />}>
+        <Route path="/faculty/courses" element={<FacultyCoursesPlaceholder />} />
+        <Route path="/faculty/bulk-upload" element={<FacultyUploadPlaceholder />} />
+        <Route path="/faculty/audit-logs" element={<FacultyAuditPlaceholder />} />
+      </Route>
     </Route>
 
     {/* 3. Authentication Routes (LoginLayout: Header + Centered Outlet; STRICTLY NO FOOTER) */}
@@ -159,7 +165,9 @@ export const AppRoutes = () => (
 function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
