@@ -31,7 +31,7 @@ const CurriculumPage = () => {
   const [courses, setCourses] = useState([]);
   const [isLoadingFilters, setIsLoadingFilters] = useState(false);
   const [isLoadingCourses, setIsLoadingCourses] = useState(false);
-  const [isDownloadingZip, setIsDownloadingZip] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [downloadNotice, setDownloadNotice] = useState('');
 
@@ -117,48 +117,79 @@ const CurriculumPage = () => {
     }
   };
 
-  // 4. Handle ZIP Archive Download Action
-  const handleDownloadZip = async () => {
-    if (!filters.programme) return;
+  // 4. Handle Syllabus Download Action (One-by-one automatic downloads, no ZIP)
+  const handleDownloadAll = async () => {
+    if (!courses || courses.length === 0) return;
 
-    setIsDownloadingZip(true);
+    setIsDownloading(true);
     setDownloadNotice('');
-    try {
-      const response = await apiClient.get('/courses/download-all', {
-        params: filters,
-        responseType: 'blob'
-      });
 
-      // Extract filename from Content-Disposition header if available
-      const disposition = response.headers?.['content-disposition'];
-      let filename = `IIITBH_Syllabi_${filters.programme}.zip`;
-      if (disposition && disposition.includes('filename=')) {
-        const match = disposition.match(/filename="?([^"]+)"?/);
-        if (match && match[1]) {
-          filename = decodeURIComponent(match[1]);
+    try {
+      // Find courses that have official PDFs available
+      const downloadableCourses = courses.filter((c) => c.hasOfficialPdf);
+
+      if (downloadableCourses.length === 0) {
+        setDownloadNotice(
+          'No official syllabus PDFs have been uploaded yet for the selected courses.'
+        );
+        setTimeout(() => setDownloadNotice(''), 6000);
+        setIsDownloading(false);
+        return;
+      }
+
+      setDownloadNotice(
+        `Starting download of ${downloadableCourses.length} syllabus PDF${downloadableCourses.length > 1 ? 's' : ''}...`
+      );
+
+      let successCount = 0;
+
+      for (let i = 0; i < downloadableCourses.length; i++) {
+        const course = downloadableCourses[i];
+        try {
+          const response = await apiClient.get(`/courses/${course.id}/pdf`, {
+            responseType: 'blob'
+          });
+
+          // Extract filename from Content-Disposition header if available
+          const disposition = response.headers?.['content-disposition'];
+          let filename = `${course.courseCode}_Syllabus.pdf`;
+          if (disposition && disposition.includes('filename=')) {
+            const match = disposition.match(/filename="?([^"]+)"?/);
+            if (match && match[1]) {
+              filename = decodeURIComponent(match[1]);
+            }
+          }
+
+          const blob = new Blob([response.data], { type: 'application/pdf' });
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          window.URL.revokeObjectURL(downloadUrl);
+
+          successCount++;
+        } catch (itemErr) {
+          console.error(`Failed to download syllabus for ${course.courseCode}:`, itemErr);
+        }
+
+        // Small delay between automatic downloads so browser triggers each cleanly
+        if (i < downloadableCourses.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
         }
       }
 
-      // Create blob download URL and trigger click
-      const blob = new Blob([response.data], { type: 'application/zip' });
-      const downloadUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-
-      setDownloadNotice('Official syllabi archive downloaded successfully.');
+      setDownloadNotice(
+        `Successfully downloaded ${successCount} of ${downloadableCourses.length} syllabus PDF${downloadableCourses.length > 1 ? 's' : ''}.`
+      );
       setTimeout(() => setDownloadNotice(''), 6000);
     } catch (err) {
-      setDownloadNotice(
-        'Unable to download syllabi archive. No physical PDF documents were found for this selection.'
-      );
-      setTimeout(() => setDownloadNotice(''), 8000);
+      setDownloadNotice('Failed to download syllabi. Please try again.');
+      setTimeout(() => setDownloadNotice(''), 6000);
     } finally {
-      setIsDownloadingZip(false);
+      setIsDownloading(false);
     }
   };
 
@@ -262,8 +293,10 @@ const CurriculumPage = () => {
         <CurriculumTable
           courses={courses}
           filters={filters}
-          onDownloadZip={handleDownloadZip}
-          isDownloadingZip={isDownloadingZip}
+          onDownloadAll={handleDownloadAll}
+          onDownloadZip={handleDownloadAll}
+          isDownloading={isDownloading}
+          isDownloadingZip={isDownloading}
         />
       )}
 

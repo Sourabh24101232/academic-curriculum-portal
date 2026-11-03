@@ -36,9 +36,13 @@ export const formatSummaryLine = (filters = {}) => {
 const CurriculumTable = ({
   courses = [],
   filters = {},
+  onDownloadAll,
   onDownloadZip,
+  isDownloading = false,
   isDownloadingZip = false
 }) => {
+  const handleDownload = onDownloadAll || onDownloadZip;
+  const downloading = isDownloading || isDownloadingZip;
   const summaryLine = formatSummaryLine(filters);
   const hasCourses = courses && courses.length > 0;
 
@@ -53,15 +57,15 @@ const CurriculumTable = ({
         {hasCourses && (
           <button
             type="button"
-            onClick={onDownloadZip}
-            disabled={isDownloadingZip}
+            onClick={handleDownload}
+            disabled={downloading}
             aria-label="Download All Syllabus (PDF)"
             className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#f6ba38] hover:bg-[#e5a823] active:bg-amber-600 text-slate-900 text-xs font-bold rounded shadow-xs transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap self-start sm:self-auto"
           >
-            {isDownloadingZip ? (
+            {downloading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
-                <span>Preparing Syllabi ZIP...</span>
+                <span>Downloading Syllabi...</span>
               </>
             ) : (
               <>
