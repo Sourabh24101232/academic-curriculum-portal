@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import FilterBar from '../../components/student/FilterBar';
 import CurriculumTable from '../../components/student/CurriculumTable';
 import { useFilterHistory } from '../../hooks/useFilterHistory';
 import { publicApi, apiClient } from '../../services/api';
-import { GraduationCap, Loader2, AlertCircle, Info, Sparkles } from 'lucide-react';
+import { GraduationCap, Loader2, AlertCircle, Info, Sparkles, Home, ChevronRight } from 'lucide-react';
 
 /**
  * CurriculumPage Component
@@ -164,8 +165,24 @@ const CurriculumPage = () => {
   const isGateActive = !filters.programme;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       
+      {/* Breadcrumbs Navigation */}
+      <nav aria-label="Breadcrumb" className="text-xs text-slate-500 pb-1">
+        <ol className="flex items-center gap-1.5 flex-wrap">
+          <li>
+            <Link to="/" className="inline-flex items-center gap-1 text-slate-600 hover:text-black">
+              <Home className="w-3.5 h-3.5 text-slate-500" />
+              <span>Home</span>
+            </Link>
+          </li>
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+          <li className="text-slate-600">Academics</li>
+          <ChevronRight className="w-3 h-3 text-slate-400" />
+          <li className="font-semibold text-slate-900">Curriculum</li>
+        </ol>
+      </nav>
+
       {/* Reactive Filter Bar (Strictly NO search bar) */}
       <FilterBar
         filters={filters}

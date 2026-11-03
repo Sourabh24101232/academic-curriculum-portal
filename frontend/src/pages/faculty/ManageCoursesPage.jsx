@@ -42,12 +42,12 @@ const ManageCoursesPage = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  // Filters State
+  // Default filters matching proposed mockup
   const [filters, setFilters] = useState({
-    programme: '',
-    batch: '',
-    branch: '',
-    semester: ''
+    programme: 'BTech',
+    batch: '2024 - 2028',
+    branch: 'CSE',
+    semester: 'Semester 5'
   });
 
   // Dynamic filter options state
@@ -166,41 +166,22 @@ const ManageCoursesPage = () => {
     });
   };
 
+  const summaryLine = `${filters.semester || 'Semester 5'} · ${
+    filters.programme?.toLowerCase() === 'btech' ? 'Btech' : (filters.programme || 'Btech')
+  }${filters.branch ? ` (${filters.branch})` : ''}${
+    filters.batch ? ` · Batch ${filters.batch}` : ''
+  }`;
+
   return (
     <div className="space-y-6">
       
-      {/* 1. Top Navigation Bar */}
-      <div className="flex items-center justify-between py-2 border-b border-slate-200">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-institute-navy px-3 py-1.5 rounded hover:bg-slate-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Go to Prev Page</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 px-3 py-1.5 rounded hover:bg-red-50 transition-colors"
-          title="Sign out of faculty portal"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Logout</span>
-        </button>
-      </div>
-
-      {/* 2. Page Header & Primary Action Button */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* 1. Page Header & Primary Action Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="w-2.5 h-2.5 rounded-full bg-institute-gold" />
-            <h1 className="text-xl sm:text-2xl font-bold text-institute-navy tracking-tight font-serif">
-              Manage Courses
-            </h1>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Manage Courses
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
             View, add, edit or delete courses.
           </p>
         </div>
@@ -208,9 +189,9 @@ const ManageCoursesPage = () => {
         {/* Primary Action Button: + Add New Subject */}
         <Link
           to="/faculty/courses/new"
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-institute-navy hover:bg-institute-navyDark text-white font-bold text-xs sm:text-sm rounded-md shadow border border-institute-gold transition-colors whitespace-nowrap"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0b2545] hover:bg-[#07192f] text-white font-semibold text-xs sm:text-sm rounded-md shadow-xs transition-colors whitespace-nowrap self-start sm:self-auto cursor-pointer"
         >
-          <Plus className="w-4 h-4 text-institute-gold" />
+          <Plus className="w-4 h-4 text-white" />
           <span>+ Add New Subject</span>
         </Link>
       </div>
@@ -236,19 +217,19 @@ const ManageCoursesPage = () => {
         </div>
       )}
 
-      {/* 3. Filter Bar (Programme, Batch, Branch, Semester) */}
+      {/* 2. Filter Bar (Course, Batch, Branch, Semester) */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-5">
         <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-institute-gold" />
-            <h3 className="text-xs font-bold uppercase tracking-wider text-institute-navy">
+            <Filter className="w-4 h-4 text-[#f6ba38]" />
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">
               Course Offering Filters
             </h3>
           </div>
           <button
             type="button"
             onClick={handleResetFilters}
-            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-institute-navy font-semibold transition-colors"
+            className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900 font-semibold transition-colors cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset Filters</span>
@@ -256,18 +237,18 @@ const ManageCoursesPage = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Programme Dropdown */}
+          {/* Course Dropdown */}
           <div>
             <label htmlFor="filter-programme" className="block text-xs font-semibold text-slate-700 mb-1">
-              Programme
+              Course
             </label>
             <select
               id="filter-programme"
               value={filters.programme}
               onChange={(e) => setFilters((prev) => ({ ...prev, programme: e.target.value }))}
-              className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
+              className="w-full text-xs sm:text-sm bg-white border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-1 focus:ring-[#f6ba38] focus:border-slate-400 cursor-pointer"
             >
-              <option value="">All Programmes</option>
+              <option value="">All Courses</option>
               {filterOptions.programmes.map((p) => (
                 <option key={p} value={p}>{p}</option>
               ))}
@@ -336,6 +317,7 @@ const ManageCoursesPage = () => {
         onDelete={handleDeleteCourse}
         isDeleting={isDeleting}
         isLoading={isLoading}
+        summaryLine={summaryLine}
       />
 
     </div>

@@ -1,285 +1,172 @@
 import React from 'react';
 import {
-  MapPin,
-  Phone,
+  Home,
   Mail,
-  ExternalLink,
-  ChevronRight,
-  ShieldAlert,
-  BookOpen,
-  Calendar,
-  Lock,
-  Globe
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin
 } from 'lucide-react';
+
+const USEFUL_LINKS = [
+  'EVENTS',
+  'NEWS AND NOTICES',
+  'STUDY IN INDIA',
+  'ONLINE FEE PAYMENT',
+  'WEBMAIL',
+  'ONLINE PAYMENT TERMS & CONDITIONS [CANARA BANK]',
+  'REFUND RULES [SBI BANK]',
+  'ANTI RAGGING',
+  'WOMEN CELL',
+  'GENDER WISE DATA',
+  'RECRUITMENTS',
+  'JOSAA',
+  'DOWNLOADS',
+  'TENDERS/NIQS',
+  'AUDIT & ANNUAL REPORT',
+  'CSAB',
+  'GRIEVANCE CELL',
+  'ICC',
+  'IIITBH ALUMNI',
+  'OUTREACH',
+  'RTI'
+];
+
+const LOCATION_LINKS = [
+  'HOW TO REACH',
+  'HOTELS NEAR THE INSTITUTE'
+];
 
 /**
  * Footer Component
- * Institutional 4-column footer adhering to standard Government / IIIT guidelines:
- * - Col 1: Institutional Contact Information & Permanent Address
- * - Col 2: Quick Portal Links & Academic Ordinances
- * - Col 3: Academic Degree Programmes & Departments
- * - Col 4: Useful Campus Resources, Statutory Compliance & Portals
- * - Bottom Bar: Copyright notice, legal disclaimers & timestamp
+ * Matches the official IIIT Bhagalpur website footer with golden headings,
+ * contact details, social media icons, and total visitors counter.
+ * All links are rendered as inactive.
  */
 const Footer = () => {
   return (
-    <footer className="bg-institute-navy text-slate-200 border-t-4 border-institute-gold">
-      {/* Main 4-Column Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+    <footer className="bg-[#011844] text-white text-xs select-none">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+          
+          {/* Column 1: Useful Links */}
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-4">
+              USEFUL LINKS
+            </h3>
+            <ul className="space-y-1.5 text-[11px] font-medium tracking-wide">
+              {USEFUL_LINKS.map((link, idx) => (
+                <li key={idx}>
+                  <span
+                    className={`cursor-default transition-colors ${
+                      link === 'OUTREACH' ? 'text-blue-400' : 'text-slate-100 hover:text-slate-100'
+                    }`}
+                  >
+                    {link}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-          {/* Column 1: Contact Information */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-institute-gold" />
-              <h3 className="text-sm font-bold tracking-wider uppercase text-white">
-                Contact Information
-              </h3>
+          {/* Column 2: Location */}
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-4">
+              LOCATION
+            </h3>
+            <ul className="space-y-2 text-[11px] font-medium tracking-wide">
+              {LOCATION_LINKS.map((link, idx) => (
+                <li key={idx}>
+                  <span className="cursor-default text-slate-100 hover:text-slate-100">
+                    {link}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Contact Info */}
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-4">
+              CONTACT INFO
+            </h3>
+            <div className="space-y-3 text-[11px] font-medium text-slate-100 leading-relaxed">
+              <p>
+                Indian Institute of Information<br />
+                Technology Bhagalpur.
+              </p>
+              <div className="flex items-start gap-2 pt-1">
+                <Home className="w-4 h-4 text-[#d3b62a] flex-shrink-0 mt-0.5" />
+                <span>Sabour, Bhagalpur - 813210</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-[#d3b62a] flex-shrink-0" />
+                <span className="cursor-default">pro@iiitbh.ac.in</span>
+              </div>
             </div>
+          </div>
+
+          {/* Column 4: Connect With Us & Visitors */}
+          <div>
+            <h3 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-4">
+              CONNECT WITH US
+            </h3>
             
-            <p className="text-xs text-slate-300 font-medium">
-              Indian Institute of Information Technology Bhagalpur
-            </p>
-
-            <ul className="space-y-3 text-xs text-slate-300">
-              <li className="flex items-start gap-2.5">
-                <MapPin className="w-4 h-4 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>
-                  Permanent Campus, Sabour,<br />
-                  Bhagalpur, Bihar – 813210, India
-                </span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Phone className="w-4 h-4 text-institute-gold flex-shrink-0" />
-                <span>+91 (0641) 222-3000 / 222-3001</span>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Mail className="w-4 h-4 text-institute-gold flex-shrink-0" />
-                <a
-                  href="mailto:academic@iiitbh.ac.in"
-                  className="hover:text-institute-gold transition-colors"
-                >
-                  academic@iiitbh.ac.in
-                </a>
-              </li>
-              <li className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-institute-gold flex-shrink-0" />
-                <a
-                  href="https://www.iiitbh.ac.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-institute-gold inline-flex items-center gap-1 transition-colors"
-                >
-                  www.iiitbh.ac.in
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 2: Quick Links */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-institute-gold" />
-              <h3 className="text-sm font-bold tracking-wider uppercase text-white">
-                Quick Links
-              </h3>
+            {/* Social Icons in Yellow */}
+            <div className="flex items-center gap-3 mb-6">
+              <span
+                className="w-7 h-7 rounded bg-[#d3b62a] text-[#011844] flex items-center justify-center cursor-default hover:opacity-90"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-4 h-4 fill-current" />
+              </span>
+              <span
+                className="w-7 h-7 rounded bg-[#d3b62a] text-[#011844] flex items-center justify-center cursor-default hover:opacity-90"
+                aria-label="Twitter"
+              >
+                <Twitter className="w-4 h-4 fill-current" />
+              </span>
+              <span
+                className="w-7 h-7 rounded bg-[#d3b62a] text-[#011844] flex items-center justify-center cursor-default hover:opacity-90"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </span>
+              <span
+                className="w-7 h-7 rounded bg-[#d3b62a] text-[#011844] flex items-center justify-center cursor-default hover:opacity-90"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4 fill-current" />
+              </span>
             </div>
 
-            <ul className="space-y-2.5 text-xs text-slate-300">
-              <li>
-                <a
-                  href="/"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ChevronRight className="w-3 h-3 text-institute-gold" />
-                  <span>Portal Home</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/academic-calendar"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <Calendar className="w-3 h-3 text-institute-gold" />
-                  <span>Academic Calendar</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/ordinance"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <BookOpen className="w-3 h-3 text-institute-gold" />
-                  <span>Academic Ordinances &amp; Regulations</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/login"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <Lock className="w-3 h-3 text-institute-gold" />
-                  <span>Faculty &amp; Admin Dashboard</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/rti"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ChevronRight className="w-3 h-3 text-institute-gold" />
-                  <span>Right to Information (RTI) Cell</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/nirf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ChevronRight className="w-3 h-3 text-institute-gold" />
-                  <span>NIRF &amp; Accreditations</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: Academic Programmes */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-institute-gold" />
-              <h3 className="text-sm font-bold tracking-wider uppercase text-white">
-                Academic Programmes
-              </h3>
+            {/* Visitors Counter */}
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-2">
+                VISITORS
+              </h4>
+              <p className="text-[11px] text-slate-100 flex items-center gap-1.5 font-medium">
+                <span className="text-sm leading-none">&bull;</span>
+                <span>Total Visitors: <strong>4578545</strong></span>
+              </p>
             </div>
-
-            <ul className="space-y-2.5 text-xs text-slate-300">
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>B.Tech in Computer Science &amp; Engineering (CSE)</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>B.Tech in Electronics &amp; Communication Engg (ECE)</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>B.Tech in Mechatronics &amp; Automation Engg (MEA)</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>M.Tech in AI &amp; Data Science / VLSI Systems</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>Ph.D. Doctoral Research Programmes</span>
-              </li>
-              <li className="flex items-start gap-1.5">
-                <ChevronRight className="w-3 h-3 text-institute-gold flex-shrink-0 mt-0.5" />
-                <span>Minor Degrees &amp; Honors Specializations</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 4: Useful Resources */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-institute-gold" />
-              <h3 className="text-sm font-bold tracking-wider uppercase text-white">
-                Useful Resources
-              </h3>
-            </div>
-
-            <ul className="space-y-2.5 text-xs text-slate-300">
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/library"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
-                  <span>Central Library &amp; Digital Repositories</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://erp.iiitbh.ac.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
-                  <span>Institute ERP Portal (AIMS)</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.iiitbh.ac.in/icc"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ShieldAlert className="w-3 h-3 text-slate-400" />
-                  <span>Internal Complaints Committee (ICC)</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://www.antiragging.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 text-amber-300 hover:text-institute-gold transition-colors"
-                >
-                  <ShieldAlert className="w-3 h-3 text-amber-400" />
-                  <span className="font-medium">Anti-Ragging Undertaking &amp; Helpline</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://nad.gov.in"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-institute-gold transition-colors"
-                >
-                  <ExternalLink className="w-3 h-3 text-slate-400" />
-                  <span>National Academic Depository (NAD / ABC)</span>
-                </a>
-              </li>
-            </ul>
           </div>
 
         </div>
       </div>
 
       {/* Bottom Sub-Bar */}
-      <div className="bg-institute-navyDark border-t border-slate-800 text-slate-400 text-xs py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <div className="border-t border-slate-800/80 bg-[#001030] py-3.5 px-4 sm:px-6 lg:px-8 text-[11px] text-slate-300">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div>
-            <p>
-              Copyright &copy; 2026 Indian Institute of Information Technology Bhagalpur. All rights reserved.
-            </p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              Designed &amp; Maintained by Computer Science &amp; Engineering Department &bull; Academic Portal v1.0
-            </p>
+            &copy; 2024 Indian Institute of Information Technology Bhagalpur. All rights reserved.
           </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-400">
-            <a href="/privacy" className="hover:text-institute-gold transition-colors">Privacy Policy</a>
-            <span>&bull;</span>
-            <a href="/terms" className="hover:text-institute-gold transition-colors">Terms of Use</a>
-            <span>&bull;</span>
-            <a href="/disclaimer" className="hover:text-institute-gold transition-colors">Disclaimer</a>
-            <span>&bull;</span>
-            <a href="/hyperlink" className="hover:text-institute-gold transition-colors">Hyperlink Policy</a>
+          <div className="flex items-center gap-3 text-slate-300">
+            <span className="cursor-default">Privacy Policy</span>
+            <span>|</span>
+            <span className="cursor-default">Terms of Use</span>
+            <span>|</span>
+            <span className="cursor-default">Sitemap</span>
           </div>
         </div>
       </div>

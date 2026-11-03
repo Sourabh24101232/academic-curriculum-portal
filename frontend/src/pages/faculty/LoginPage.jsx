@@ -68,18 +68,9 @@ const LoginPage = () => {
       {/* Centered Login Card */}
       <div className="bg-white rounded-xl shadow-2xl border border-slate-200 p-6 sm:p-8 text-institute-textDark">
         
-        {/* Institutional Branding: Crest Seal + Azadi Emblem */}
-        <div className="flex items-center justify-center gap-3 sm:gap-4 mb-5">
-          <IIITBhagalpurSeal className="w-16 h-16 sm:w-20 sm:h-20" />
-          <div className="h-10 w-px bg-slate-200 hidden sm:block" />
-          <div className="hidden sm:block">
-            <AzadiMahotsavLogo className="h-12 w-auto max-w-[120px]" />
-          </div>
-        </div>
-
         {/* Card Title & Subtitle */}
         <div className="text-center mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-institute-navy tracking-tight font-serif">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#002855] tracking-tight">
             Faculty Login
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 font-medium">
@@ -127,8 +118,8 @@ const LoginPage = () => {
                   setEmail(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
-                placeholder="faculty@iiitbh.ac.in"
-                className="w-full pl-9 pr-3 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy transition-all text-slate-800 placeholder-slate-400"
+                placeholder="Enter your email id"
+                className="w-full pl-9 pr-3 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f6ba38] focus:border-slate-400 transition-all text-slate-800 placeholder-slate-400"
               />
             </div>
           </div>
@@ -156,14 +147,14 @@ const LoginPage = () => {
                   setPassword(e.target.value);
                   if (errorMessage) setErrorMessage('');
                 }}
-                placeholder="••••••••"
-                className="w-full pl-9 pr-10 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy transition-all text-slate-800 placeholder-slate-400"
+                placeholder="Enter your password"
+                className="w-full pl-9 pr-10 py-2.5 text-xs sm:text-sm bg-white border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#f6ba38] focus:border-slate-400 transition-all text-slate-800 placeholder-slate-400"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-institute-navy"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none focus:text-slate-800"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -178,7 +169,7 @@ const LoginPage = () => {
                 id="remember-me"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-slate-300 text-institute-gold focus:ring-institute-gold cursor-pointer"
+                className="w-4 h-4 rounded border-slate-300 text-[#f6ba38] focus:ring-[#f6ba38] cursor-pointer"
               />
               <span className="text-xs text-slate-600 font-medium">Remember me</span>
             </label>
@@ -188,11 +179,11 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-institute-gold hover:bg-amber-600 active:bg-amber-700 text-institute-navyDark font-bold text-xs sm:text-sm rounded-md shadow hover:shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2"
+            className="w-full py-2.5 px-4 bg-[#f6ba38] hover:bg-[#e5a823] active:bg-amber-600 text-slate-900 font-bold text-sm rounded-md shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed mt-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-institute-navyDark" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-900" />
                 <span>Logging in...</span>
               </>
             ) : (

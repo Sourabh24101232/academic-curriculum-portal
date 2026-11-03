@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, BookPlus } from 'lucide-react';
+import { BookPlus } from 'lucide-react';
 import { adminApi } from '../../services/api';
 import SubjectForm from '../../components/faculty/SubjectForm';
 import ExcelImportModal from '../../components/faculty/ExcelImportModal';
@@ -46,18 +46,6 @@ const AddSubjectPage = () => {
 
   return (
     <div className="space-y-6">
-      
-      {/* 1. Top Navigation Bar */}
-      <div className="flex items-center justify-between py-2 border-b border-slate-200">
-        <button
-          type="button"
-          onClick={() => navigate('/faculty/courses')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-institute-navy px-3 py-1.5 rounded hover:bg-slate-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Go to Prev Page</span>
-        </button>
-      </div>
 
       {/* 2. Page Header */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6">

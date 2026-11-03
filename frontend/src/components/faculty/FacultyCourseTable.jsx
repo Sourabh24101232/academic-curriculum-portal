@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Edit, Trash2, AlertTriangle, Loader2, FileText, CheckCircle2 } from 'lucide-react';
+import { Edit, Pencil, Trash2, AlertTriangle, Loader2, FileText, CheckCircle2 } from 'lucide-react';
 
 /**
  * FacultyCourseTable Component
  * Faculty course listing table with action links and secure delete modal.
- *
- * Strict Design Invariants:
- * - Columns: Course Code, Course Name, Actions.
- * - Action Button: Gold button labeled "Update Syllabus" linking to /faculty/courses/:id/edit.
- * - Delete Action: Opens a confirmation modal before triggering deletion.
- * - STRICTLY NO SIDEBAR.
- * - STRICTLY NO "Download All Syllabi" button here.
  */
 const FacultyCourseTable = ({
   courses = [],
   onDelete,
   isDeleting = false,
-  isLoading = false
+  isLoading = false,
+  summaryLine
 }) => {
   const [selectedCourseForDelete, setSelectedCourseForDelete] = useState(null);
 
@@ -57,95 +51,81 @@ const FacultyCourseTable = ({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-institute-navy text-white text-xs uppercase tracking-wider font-semibold border-b border-institute-gold">
-              <th scope="col" className="py-3.5 px-4 sm:px-6 w-1/4">Course Code</th>
-              <th scope="col" className="py-3.5 px-4 sm:px-6 w-1/2">Course Name</th>
-              <th scope="col" className="py-3.5 px-4 sm:px-6 text-right w-1/4">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-200 text-xs sm:text-sm">
-            {courses.map((course) => (
-              <tr key={course.id} className="hover:bg-slate-50/80 transition-colors">
-                {/* 1. Course Code Column */}
-                <td className="py-3.5 px-4 sm:px-6 font-semibold text-institute-navy align-top">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="font-mono text-sm font-bold text-institute-navy">
-                      {course.courseCode}
-                    </span>
-                    {course.isElective && (
-                      <span className="text-xs text-institute-gold font-bold" title="Elective Course">
-                        *
-                      </span>
-                    )}
-                    {course.isElective && (
-                      <span className="px-1.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-semibold rounded">
-                        Elective
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-1">
-                    {course.hasOfficialPdf ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium">
-                        <CheckCircle2 className="w-3 h-3" /> PDF Attached
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium">
-                        No PDF Attached
-                      </span>
-                    )}
-                  </div>
-                </td>
+    <div className="space-y-4">
+      {summaryLine && (
+        <h2 className="text-xl sm:text-2xl font-bold text-[#002855] tracking-tight">
+          {summaryLine}
+        </h2>
+      )}
 
-                {/* 2. Course Name Column */}
-                <td className="py-3.5 px-4 sm:px-6 text-slate-800 align-top">
-                  <div className="font-semibold text-slate-900 mb-1">
-                    {course.courseName}
-                  </div>
-                  <div className="text-xs text-slate-500 flex flex-wrap gap-x-2 gap-y-0.5 items-center">
-                    <span className="font-medium text-slate-700">{course.programme}</span>
-                    {course.branch && <span>• {course.branch}</span>}
-                    {course.semester && <span>• {course.semester}</span>}
-                    {course.batch && <span>• Batch {course.batch}</span>}
-                    <span className="text-slate-300">|</span>
-                    <span className="font-mono text-slate-600 font-medium">
-                      L {course.lecture ?? 0}  T {course.tutorial ?? 0}  P {course.practical ?? 0}  C {course.credits ?? 0}
-                    </span>
-                  </div>
-                </td>
-
-                {/* 3. Actions Column */}
-                <td className="py-3.5 px-4 sm:px-6 text-right align-top">
-                  <div className="flex items-center justify-end gap-2">
-                    {/* Gold Action Button: Update Syllabus */}
-                    <Link
-                      to={`/faculty/courses/${course.id}/edit`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-institute-gold hover:bg-amber-600 active:bg-amber-700 text-institute-navyDark text-xs font-bold rounded shadow-sm transition-colors whitespace-nowrap"
-                      title="Edit course offering syllabus & metadata"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                      <span>Update Syllabus</span>
-                    </Link>
-
-                    {/* Delete Action Button */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCourseForDelete(course)}
-                      aria-label={`Delete ${course.courseCode}`}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                      title="Delete course offering"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
+      <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#f4f6f8] text-slate-800 text-xs uppercase tracking-wider font-bold border-b border-slate-200">
+                <th scope="col" className="py-3 px-4 sm:px-6 w-1/4">Course Code</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 w-1/2">Course Name</th>
+                <th scope="col" className="py-3 px-4 sm:px-6 text-right w-1/4">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+              {courses.map((course) => (
+                <tr key={course.id} className="hover:bg-slate-50/70 transition-colors">
+                  {/* 1. Course Code Column */}
+                  <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900 align-middle">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-semibold text-sm text-slate-900">
+                        {course.courseCode}
+                      </span>
+                      {course.isElective && (
+                        <span className="text-xs text-red-500 font-bold" title="Elective Course">
+                          *
+                        </span>
+                      )}
+                    </div>
+                  </td>
+
+                  {/* 2. Course Name Column */}
+                  <td className="py-3.5 px-4 sm:px-6 text-slate-900 font-medium align-middle">
+                    {course.courseName}
+                  </td>
+
+                  {/* 3. Actions Column */}
+                  <td className="py-3.5 px-4 sm:px-6 text-right align-middle">
+                    <div className="flex items-center justify-end gap-2">
+                      {/* Gold Action Button: Update Syllabus with Pencil icon */}
+                      <Link
+                        to={`/faculty/courses/${course.id}/edit`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#f6ba38] hover:bg-[#e5a823] active:bg-amber-600 text-slate-900 text-xs font-bold rounded shadow-xs transition-colors whitespace-nowrap"
+                        title="Edit course offering syllabus & metadata"
+                      >
+                        <Pencil className="w-3.5 h-3.5 text-slate-900" />
+                        <span>Update Syllabus</span>
+                      </Link>
+
+                      {/* Delete Action Button */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCourseForDelete(course)}
+                        aria-label={`Delete ${course.courseCode}`}
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                        title="Delete course offering"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Legend Below Table: * represents elective courses */}
+      <div className="text-right text-xs text-slate-600 pr-2">
+        <span className="text-red-600 font-bold mr-1">*</span>
+        <span>represents elective courses</span>
       </div>
 
       {/* Delete Confirmation Modal */}

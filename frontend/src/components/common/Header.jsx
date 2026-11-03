@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import headerImage from '../../assets/images/header.png';
 
 /**
  * IIIT Bhagalpur Circular Crest / Seal (Vector SVG)
@@ -163,55 +165,20 @@ const AzadiMahotsavLogo = ({ className = 'w-24 h-16 sm:w-32 sm:h-20' }) => (
 
 /**
  * Header Component
- * Official institutional bilingual header featuring:
- * - Circular IIIT Bhagalpur crest / seal
- * - Hindi institutional title
- * - English institutional title
- * - Subtitle: An Institute of National Importance under an Act of Parliament
- * - Azadi Ka Amrit Mahotsav commemorative logo
+ * Official institutional header displaying the provided header banner image
+ * containing the IIIT Bhagalpur seal, bilingual identity, and Azadi Ka Amrit Mahotsav logo.
  */
 const Header = () => {
   return (
-    <header className="bg-white shadow-sm border-b border-slate-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 sm:py-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-6">
-          
-          {/* Left: Institute Crest Seal & Bilingual Identity */}
-          <div className="flex items-center gap-4 sm:gap-5 text-center md:text-left">
-            <a
-              href="/"
-              className="inline-block transition-transform hover:scale-105 duration-200 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:ring-offset-2 rounded-full"
-              title="IIIT Bhagalpur Academic Curriculum Portal"
-            >
-              <IIITBhagalpurSeal />
-            </a>
-
-            <div>
-              {/* Hindi Title */}
-              <h1 className="text-base sm:text-xl md:text-2xl font-bold text-institute-navy tracking-tight font-serif leading-tight">
-                भारतीय सूचना प्रौद्योगिकी संस्थान भागलपुर
-              </h1>
-              {/* English Title */}
-              <h2 className="text-xs sm:text-sm md:text-base font-extrabold text-institute-navyDark tracking-wide uppercase mt-0.5 leading-snug">
-                Indian Institute of Information Technology Bhagalpur
-              </h2>
-              {/* National Importance Subtitle */}
-              <p className="text-[11px] sm:text-xs md:text-sm text-slate-600 font-medium tracking-normal mt-0.5">
-                An Institute of National Importance under an Act of Parliament
-              </p>
-              {/* Portal Identifier */}
-              <span className="inline-block mt-1 px-2.5 py-0.5 bg-institute-surface border border-slate-200 rounded text-[11px] font-semibold text-institute-navy">
-                Academic Curriculum &amp; Syllabus Portal
-              </span>
-            </div>
-          </div>
-
-          {/* Right: Azadi Ka Amrit Mahotsav Emblem & National Affiliation */}
-          <div className="hidden lg:flex items-center gap-4 pl-4 border-l border-slate-200">
-            <AzadiMahotsavLogo />
-          </div>
-
-        </div>
+    <header className="w-full bg-white shadow-sm select-none border-b border-slate-200">
+      <div className="w-full max-w-[1920px] mx-auto">
+        <Link to="/" className="block w-full focus:outline-none" title="IIIT Bhagalpur Curriculum Portal">
+          <img
+            src={headerImage}
+            alt="Indian Institute of Information Technology Bhagalpur - Academic Curriculum Portal"
+            className="w-full h-auto block"
+          />
+        </Link>
       </div>
     </header>
   );

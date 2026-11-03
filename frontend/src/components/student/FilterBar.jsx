@@ -113,22 +113,22 @@ const FilterBar = ({
       {/* 5-Column Grid: 4 Dropdowns + 1 Reset Action Button (STRICTLY NO SEARCH BAR) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
         
-        {/* 1. Programme Dropdown */}
+        {/* 1. Course (Programme) Dropdown */}
         <div>
           <label
             htmlFor="filter-programme"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5"
           >
-            Programme <span className="text-amber-500">*</span>
+            Course
           </label>
           <select
             id="filter-programme"
             value={currentFilters.programme}
             onChange={(e) => handleSelectChange('programme', e.target.value)}
             disabled={isLoading}
-            className="w-full text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded px-3 py-2 focus:outline-none focus:border-institute-navy focus:ring-1 focus:ring-institute-gold transition-colors disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
+            className="w-full text-xs font-medium text-slate-800 bg-white border border-slate-300 rounded px-3 py-2 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-[#f6ba38] transition-colors disabled:bg-slate-100 disabled:text-slate-400 cursor-pointer"
           >
-            <option value="">Select Programme</option>
+            <option value="">Select Course</option>
             {programmes.map((prog) => (
               <option key={prog} value={prog}>
                 {prog}

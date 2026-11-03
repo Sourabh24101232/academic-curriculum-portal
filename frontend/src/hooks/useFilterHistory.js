@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from 'react';
 export const FILTER_STORAGE_KEY = 'iiitbh_student_filters';
 
 export const DEFAULT_FILTERS = Object.freeze({
-  programme: '',
-  batch: '',
-  branch: '',
-  semester: ''
+  programme: 'BTech',
+  batch: '2024 - 2028',
+  branch: 'CSE',
+  semester: 'Semester 5'
 });
 
 /**

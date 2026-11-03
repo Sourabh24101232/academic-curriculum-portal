@@ -1,84 +1,66 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import TopBar from './TopBar';
+import { Outlet, useNavigate } from 'react-router-dom';
+import { ArrowLeft, LogOut } from 'lucide-react';
 import Header from './Header';
 import Footer from './Footer';
-import { BookOpen, UploadCloud, FileText, UserCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 /**
  * FacultyLayout Component
- * Faculty & Administrative layout architecture.
- *
- * Strict Design Invariants:
- * - STRICTLY NO SIDEBAR: Full horizontal width layout for faculty course management & data tables.
- * - TopBar + Header + Top Horizontal Navigation Bar + Outlet + Footer.
+ * Faculty & Administrative layout architecture matching proposed UI mockups.
+ * - Header: Official institutional header banner (header.png)
+ * - Subheader: Golden-amber bar (#f6ba38) with "← Go to Prev Page" and red "Logout" button
+ * - Outlet: Full horizontal width content container
+ * - Footer: Official college footer
  */
 const FacultyLayout = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const navItems = [
-    { label: 'Manage Courses', path: '/faculty/courses', icon: BookOpen },
-    { label: 'Bulk Excel Upload', path: '/faculty/bulk-upload', icon: UploadCloud },
-    { label: 'Audit Trail', path: '/faculty/audit-logs', icon: FileText }
-  ];
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/faculty/login', { replace: true });
+    } catch (err) {
+      navigate('/faculty/login', { replace: true });
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-institute-surface text-institute-textDark">
-      {/* 1. Top Utility Bar */}
-      <TopBar />
-
-      {/* 2. Institutional Bilingual Header */}
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-800">
+      {/* 1. Official Bilingual Header (header.png) */}
       <Header />
 
-      {/* 3. Horizontal Faculty Context Sub-Navigation Bar (STRICTLY NO SIDEBAR) */}
-      <nav aria-label="Faculty Navigation" className="bg-institute-navy text-white border-b border-institute-gold shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 sm:py-0 gap-2">
-            
-            {/* Context Badge */}
-            <div className="flex items-center gap-2 py-2">
-              <span className="w-2 h-2 rounded-full bg-institute-gold" />
-              <span className="text-xs font-semibold tracking-wider uppercase text-amber-300">
-                Faculty Portal
-              </span>
-              <span className="text-slate-500 hidden sm:inline">|</span>
-              <span className="text-xs text-slate-300 hidden sm:inline">
-                Academic Curriculum Management
-              </span>
-            </div>
+      {/* 2. Golden-Amber Subheader Bar (#f6ba38) */}
+      <div className="w-full bg-[#f6ba38] border-b border-amber-400 px-4 sm:px-6 lg:px-8 py-2">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-black transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Go to Prev Page</span>
+          </button>
 
-            {/* Horizontal Navigation Links */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                return (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t transition-colors whitespace-nowrap ${
-                      isActive
-                        ? 'bg-institute-surface text-institute-navy font-semibold border-t-2 border-institute-gold'
-                        : 'text-slate-300 hover:text-white hover:bg-institute-navyDark'
-                    }`}
-                  >
-                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-institute-gold' : 'text-slate-400'}`} />
-                    <span>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-
-          </div>
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#ed080b] hover:bg-red-700 active:bg-red-800 text-white text-xs font-bold rounded-md shadow-xs transition-colors cursor-pointer"
+            title="Sign out of faculty portal"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Logout</span>
+          </button>
         </div>
-      </nav>
+      </div>
 
-      {/* 4. Full Horizontal Width Content Container (No Sidebar) */}
+      {/* 3. Full Horizontal Width Content Container (No Sidebar) */}
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full">
         <Outlet />
       </main>
 
-      {/* 5. Institutional Footer */}
+      {/* 4. Institutional Footer */}
       <Footer />
     </div>
   );

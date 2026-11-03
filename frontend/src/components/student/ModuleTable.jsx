@@ -28,16 +28,16 @@ const ModuleTable = ({ modules = [], totalHours }) => {
     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-6">
       
       {/* Section Header */}
-      <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+      <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-institute-gold" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-institute-navy">
-            Complete Syllabus — Module-Wise Breakdown
+          <BookOpen className="w-4 h-4 text-[#1e40af]" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1e40af]">
+            Complete Syllabus — Module-wise
           </h3>
         </div>
         {calculatedTotalHours > 0 && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 px-2.5 py-1 rounded shadow-xs">
-            <Clock className="w-3.5 h-3.5 text-institute-gold" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded shadow-xs">
+            <Clock className="w-3.5 h-3.5 text-[#1e40af]" />
             <span>{calculatedTotalHours} Total Hours</span>
           </div>
         )}
@@ -48,7 +48,7 @@ const ModuleTable = ({ modules = [], totalHours }) => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-institute-navy text-white text-xs font-semibold tracking-wider uppercase border-b border-institute-navyDark">
+              <tr className="bg-[#eef4fb] text-[#1e40af] text-xs font-bold tracking-wider uppercase border-b border-slate-200">
                 <th scope="col" className="py-3 px-4 sm:px-6 w-32 whitespace-nowrap">
                   Module
                 </th>
