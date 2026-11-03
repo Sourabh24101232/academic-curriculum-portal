@@ -9,6 +9,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 
 // Authentication Context Provider
 import { AuthProvider } from './context/AuthContext';
+import { Toaster } from 'react-hot-toast';
 
 // Student Pages
 import CurriculumPage from './pages/student/CurriculumPage';
@@ -175,6 +176,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <Toaster position="top-center" reverseOrder={false} />
         <AppRoutes />
       </AuthProvider>
     </BrowserRouter>

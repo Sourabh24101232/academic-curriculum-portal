@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
-import loginBgImg from '../../assets/images/login_bg.png';
+import backgroundImage from '../../assets/images/backgroundImage.png';
 
 /**
  * LoginLayout Component
@@ -22,7 +22,7 @@ const LoginLayout = () => {
         {/* Campus Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${loginBgImg})` }}
+          style={{ backgroundImage: `url(${backgroundImage})` }}
         />
 
         {/* Subtle backdrop overlay for crisp contrast */}

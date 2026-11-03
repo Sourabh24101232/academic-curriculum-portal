@@ -75,8 +75,8 @@ const mockCourses = [
   assert(html.includes('Manage Courses'), 'ManageCoursesPage must display "Manage Courses" title');
   assert(html.includes('View, add, edit or delete courses.'), 'ManageCoursesPage must display official subtitle');
 
-  // Primary Action Button: + Add New Subject
-  assert(html.includes('+ Add New Subject'), 'ManageCoursesPage must render "+ Add New Subject" action button');
+  // Primary Action Button: Add New Subject
+  assert(html.includes('Add New Subject'), 'ManageCoursesPage must render "Add New Subject" action button');
   assert(html.includes('/faculty/courses/new'), 'Add New Subject button must link to /faculty/courses/new');
 
   // Filter Dropdowns

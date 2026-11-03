@@ -186,13 +186,13 @@ const ManageCoursesPage = () => {
           </p>
         </div>
 
-        {/* Primary Action Button: + Add New Subject */}
+        {/* Primary Action Button: Add New Subject */}
         <Link
           to="/faculty/courses/new"
           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0b2545] hover:bg-[#07192f] text-white font-semibold text-xs sm:text-sm rounded-md shadow-xs transition-colors whitespace-nowrap self-start sm:self-auto cursor-pointer"
         >
           <Plus className="w-4 h-4 text-white" />
-          <span>+ Add New Subject</span>
+          <span>Add New Subject</span>
         </Link>
       </div>
 

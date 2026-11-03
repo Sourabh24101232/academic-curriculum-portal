@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit3, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Edit3, Loader2, AlertCircle } from 'lucide-react';
 import { adminApi } from '../../services/api';
 import SubjectForm from '../../components/faculty/SubjectForm';
+import toast from 'react-hot-toast';
 
 /**
  * EditSubjectPage Component
@@ -88,6 +89,15 @@ const EditSubjectPage = () => {
       if (refreshed?.course) {
         setCourse(refreshed.course);
       }
+
+      // Smooth toast notification using react-hot-toast
+      toast.success('Syllabus updated successfully');
+
+      // Automatically shift page upward with a simple, smooth movement
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     } catch (err) {
       throw err;
     } finally {
@@ -160,17 +170,6 @@ const EditSubjectPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Success Notification Banner */}
-      {successMessage && (
-        <div
-          className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs flex items-center gap-2 shadow-sm"
-          role="status"
-        >
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-          <span>{successMessage}</span>
-        </div>
-      )}
 
       {/* 3. Course Edit Form */}
       <SubjectForm
