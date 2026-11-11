@@ -15,7 +15,9 @@ export const createCourse = async (req, res, next) => {
       programme,
       batch,
       branch,
+      branches,
       semester,
+      semesters,
       courseType,
       lecture,
       tutorial,
@@ -26,29 +28,74 @@ export const createCourse = async (req, res, next) => {
       referenceBooksText
     } = req.body;
 
-    const course = await prisma.courseOffering.create({
-      data: {
+    const targetBranches =
+      Array.isArray(branches) && branches.length > 0 ? branches : [branch];
+    const targetSemesters =
+      Array.isArray(semesters) && semesters.length > 0 ? semesters : [semester];
+
+    // Enforce uniqueness per (courseCode + programme + batch) to prevent duplicate syllabus uploads
+    const existingOfferings = await prisma.courseOffering.findMany({
+      where: {
         courseCode,
-        courseName,
         programme,
-        batch,
-        branch,
-        semester,
-        courseType,
-        lecture,
-        tutorial,
-        practical,
-        credits,
-        courseObjectives,
-        moduleWiseSyllabusText,
-        referenceBooksText
+        batch
+      },
+      select: {
+        id: true,
+        branch: true,
+        semester: true
       }
+    });
+
+    if (existingOfferings.length > 0) {
+      const existingList = existingOfferings
+        .map((o) => `${o.branch} (${o.semester})`)
+        .join(', ');
+      return next(
+        new AppError(
+          `Duplicate syllabus upload blocked: Course code "${courseCode}" already exists for ${programme} (${batch}) in ${existingList}.`,
+          409
+        )
+      );
+    }
+
+    const createdCourses = await prisma.$transaction(async (tx) => {
+      const created = [];
+      for (const targetBranch of targetBranches) {
+        for (const targetSemester of targetSemesters) {
+          const offering = await tx.courseOffering.create({
+            data: {
+              courseCode,
+              courseName,
+              programme,
+              batch,
+              branch: targetBranch,
+              semester: targetSemester,
+              courseType,
+              lecture,
+              tutorial,
+              practical,
+              credits,
+              courseObjectives,
+              moduleWiseSyllabusText,
+              referenceBooksText
+            }
+          });
+          created.push(offering);
+        }
+      }
+      return created;
     });
 
     res.status(201).json({
       success: true,
-      message: 'Course offering created successfully.',
-      course
+      message:
+        createdCourses.length === 1
+          ? 'Course offering created successfully.'
+          : `${createdCourses.length} course offerings created successfully.`,
+      course: createdCourses[0],
+      courses: createdCourses,
+      createdCount: createdCourses.length
     });
   } catch (err) {
     next(err);

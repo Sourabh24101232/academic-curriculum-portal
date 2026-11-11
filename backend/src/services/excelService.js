@@ -17,6 +17,26 @@ const isValidNonNegativeInteger = (val) => {
 };
 
 /**
+ * Splits a comma-separated cell string (e.g. "CSE, ECE") into a deduplicated array
+ * of trimmed non-empty strings while preserving original order.
+ */
+const parseMultiValueField = (rawValue) => {
+  if (!rawValue || typeof rawValue !== 'string') return [];
+  const seen = new Set();
+  const values = [];
+  for (const part of rawValue.split(',')) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (!seen.has(key)) {
+      seen.add(key);
+      values.push(trimmed);
+    }
+  }
+  return values;
+};
+
+/**
  * Generate course import Excel template with two worksheets:
  * 1. "Syllabus Import Template" - Headers and sample course offering row
  * 2. "Instructions & ReadMe" - Data format rules, field requirements, and constraints
@@ -92,8 +112,8 @@ export const generateCourseTemplateBuffer = () => {
     ['course_name', 'Yes', 'Text (e.g. Database Management Systems)', 'Official course title.'],
     ['programme', 'Yes', 'BTech, MTech, PhD', 'Degree programme identifier.'],
     ['batch', 'Yes', 'Text (e.g. 2024 - 2028)', 'Academic batch designation.'],
-    ['branch', 'Yes', 'CSE, MnC, ECE, MAE (or Department)', 'Academic branch or department.'],
-    ['semester', 'Yes', 'Semester 1 to Semester 8', 'Academic semester designation.'],
+    ['branch', 'Yes', 'CSE, MnC, ECE, MAE (comma-separated for multiple)', 'Academic branch(es) or department, e.g. CSE, ECE.'],
+    ['semester', 'Yes', 'Semester 1 to Semester 8 (comma-separated for multiple)', 'Academic semester(s), e.g. Semester 1, Semester 2.'],
     ['course_type', 'Yes', 'CORE, ELECTIVE', 'Curriculum category for the course.'],
     ['lecture', 'Yes', 'Non-negative integer (e.g. 3, 0)', 'Weekly lecture hours (L). Must be an integer >= 0.'],
     ['tutorial', 'Yes', 'Non-negative integer (e.g. 0, 1)', 'Weekly tutorial hours (T). Must be an integer >= 0.'],
@@ -104,11 +124,11 @@ export const generateCourseTemplateBuffer = () => {
     ['reference_books', 'Yes', 'Text / List', 'Standard textbooks and references for the course.'],
     [],
     ['Key Rules & Constraints:'],
-    ['1. Independent Course Offerings: Each row is imported as an independent offering record.'],
+    ['1. Multi-Branch & Multi-Semester Support: Specify comma-separated branches and/or semesters in a single row to create offerings across all combinations.'],
     ['2. Strict Module Parsing: The module_wise_syllabus column must follow "Module <N>: Topics Covered (Hours)" exactly.'],
     ['3. Sequential Module Numbers: Module numbering must begin at 1 and increment sequentially without duplicates or gaps.'],
     ['4. Non-Negative Credit Hours: lecture, tutorial, practical, and credits must all be valid non-negative integers.'],
-    ['5. Unique Offering Key: Courses are matched by (course_code + programme + batch + branch + semester).']
+    ['5. Unique Offering Key: Each subject is uniquely matched by (course_code + programme + batch) to prevent duplicate syllabus uploads.']
   ];
 
   const wsInstructions = XLSX.utils.aoa_to_sheet(instructionRows);
@@ -222,8 +242,12 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
     const courseName = getVal(['course_name', 'coursename', 'title', 'name']);
     const programme = getVal(['programme', 'program']);
     const batch = getVal(['batch', 'academic_batch']);
-    const branch = getVal(['branch', 'department', 'dept']);
-    const semester = getVal(['semester', 'sem']);
+    const rawBranch = getVal(['branch', 'branches', 'department', 'dept']);
+    const rawSemester = getVal(['semester', 'semesters', 'sem']);
+    const branches = parseMultiValueField(rawBranch);
+    const semesters = parseMultiValueField(rawSemester);
+    const branch = branches.join(', ');
+    const semester = semesters.join(', ');
     const rawCourseType = getVal(['course_type', 'coursetype', 'type']);
     const lectureRaw = getRawVal(['lecture', 'l']);
     const tutorialRaw = getRawVal(['tutorial', 't']);
@@ -262,10 +286,10 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
     if (!batch) {
       errors.push("Field 'batch' is required.");
     }
-    if (!branch) {
+    if (branches.length === 0) {
       errors.push("Field 'branch' is required.");
     }
-    if (!semester) {
+    if (semesters.length === 0) {
       errors.push("Field 'semester' is required.");
     }
 
@@ -309,33 +333,44 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
       }
     }
 
-    // 4. Duplicate course offering detection (MySQL + In-Batch)
+    // 4. Duplicate course offering detection (MySQL + In-Batch) by unique (courseCode + programme + batch)
     let isDuplicate = false;
     let existingCourseId = null;
+    let existingCourseIds = [];
+    let duplicateMessage = '';
 
-    if (courseCode && programme && batch && branch && semester) {
-      const compositeKey = `${courseCode.toLowerCase()}___${programme.toLowerCase()}___${batch.toLowerCase()}___${branch.toLowerCase()}___${semester.toLowerCase()}`;
+    if (courseCode && programme && batch) {
+      const compositeKey = `${courseCode.toLowerCase()}___${programme.toLowerCase()}___${batch.toLowerCase()}`;
 
       if (seenInBatch.has(compositeKey)) {
         isDuplicate = true;
-      } else {
+        duplicateMessage = `Duplicate course code "${courseCode}" for ${programme} (${batch}) appears multiple times in this spreadsheet.`;
+      } else if (errors.length === 0) {
         seenInBatch.add(compositeKey);
       }
 
-      // Check existing offering in MySQL database
-      const existingInDb = await prisma.courseOffering.findFirst({
+      // Check existing offerings in MySQL database
+      const existingInDb = await prisma.courseOffering.findMany({
         where: {
           courseCode,
           programme,
-          batch,
-          branch,
-          semester
+          batch
+        },
+        select: {
+          id: true,
+          branch: true,
+          semester: true
         }
       });
 
-      if (existingInDb) {
+      if (existingInDb.length > 0) {
         isDuplicate = true;
-        existingCourseId = existingInDb.id;
+        existingCourseId = existingInDb[0].id;
+        existingCourseIds = existingInDb.map((r) => r.id);
+        const existingLocations = existingInDb
+          .map((r) => `${r.branch} (${r.semester})`)
+          .join(', ');
+        duplicateMessage = `Course code "${courseCode}" already exists for ${programme} (${batch}) in ${existingLocations}.`;
       }
     }
 
@@ -358,7 +393,9 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
       programme,
       batch,
       branch,
+      branches,
       semester,
+      semesters,
       courseType: validCourseTypes.includes(upperCourseType) ? upperCourseType : rawCourseType,
       lecture: isValidNonNegativeInteger(lectureRaw) ? Number(lectureRaw) : lectureRaw,
       tutorial: isValidNonNegativeInteger(tutorialRaw) ? Number(tutorialRaw) : tutorialRaw,
@@ -370,6 +407,8 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
       status,
       isDuplicate,
       existingCourseId,
+      existingCourseIds,
+      duplicateMessage,
       errors
     });
   }
@@ -457,8 +496,14 @@ export const commitBulkImport = async ({
       const courseName = String(row.courseName || row.course_name || '').trim();
       const programme = String(row.programme || '').trim();
       const batch = String(row.batch || '').trim();
-      const branch = String(row.branch || '').trim();
-      const semester = String(row.semester || '').trim();
+      const targetBranches =
+        Array.isArray(row.branches) && row.branches.length > 0
+          ? parseMultiValueField(row.branches.join(','))
+          : parseMultiValueField(String(row.branch || ''));
+      const targetSemesters =
+        Array.isArray(row.semesters) && row.semesters.length > 0
+          ? parseMultiValueField(row.semesters.join(','))
+          : parseMultiValueField(String(row.semester || ''));
       const courseType = String(row.courseType || row.course_type || 'CORE').toUpperCase();
       const lecture = parseInt(row.lecture ?? 0, 10) || 0;
       const tutorial = parseInt(row.tutorial ?? 0, 10) || 0;
@@ -472,55 +517,41 @@ export const commitBulkImport = async ({
         row.referenceBooksText || row.reference_books || ''
       ).trim();
 
-      // Find existing offering
-      let existingRecord = null;
-      if (row.existingCourseId) {
-        existingRecord = await tx.courseOffering.findUnique({
-          where: { id: row.existingCourseId }
-        });
+      if (targetBranches.length === 0 || targetSemesters.length === 0) {
+        continue;
       }
 
-      if (!existingRecord && courseCode && programme && batch && branch && semester) {
-        existingRecord = await tx.courseOffering.findFirst({
+      // Find existing offerings by unique (courseCode + programme + batch)
+      let existingRecords = [];
+      if (Array.isArray(row.existingCourseIds) && row.existingCourseIds.length > 0) {
+        existingRecords = await tx.courseOffering.findMany({
+          where: { id: { in: row.existingCourseIds } }
+        });
+      } else if (row.existingCourseId) {
+        const found = await tx.courseOffering.findUnique({
+          where: { id: row.existingCourseId }
+        });
+        if (found) {
+          existingRecords = [found];
+        }
+      }
+
+      if (existingRecords.length === 0 && courseCode && programme && batch) {
+        existingRecords = await tx.courseOffering.findMany({
           where: {
             courseCode,
             programme,
-            batch,
-            branch,
-            semester
+            batch
           }
         });
       }
 
-      if (existingRecord) {
+      if (existingRecords.length > 0) {
         if (normalizedDupAction === 'SKIP') {
           skippedCount++;
         } else if (normalizedDupAction === 'UPDATE') {
-          await tx.courseOffering.update({
-            where: { id: existingRecord.id },
-            data: {
-              courseName,
-              courseType,
-              lecture,
-              tutorial,
-              practical,
-              credits,
-              courseObjectives,
-              moduleWiseSyllabusText,
-              referenceBooksText
-            }
-          });
-          updatedCount++;
-        }
-      } else {
-        await tx.courseOffering.create({
-          data: {
-            courseCode,
+          const sharedUpdateData = {
             courseName,
-            programme,
-            batch,
-            branch,
-            semester,
             courseType,
             lecture,
             tutorial,
@@ -529,9 +560,71 @@ export const commitBulkImport = async ({
             courseObjectives,
             moduleWiseSyllabusText,
             referenceBooksText
+          };
+
+          const existingKeySet = new Set();
+          for (const existingRecord of existingRecords) {
+            await tx.courseOffering.update({
+              where: { id: existingRecord.id },
+              data: sharedUpdateData
+            });
+            existingKeySet.add(
+              `${existingRecord.branch.toLowerCase()}___${existingRecord.semester.toLowerCase()}`
+            );
+            updatedCount++;
           }
-        });
-        importedCount++;
+
+          for (const targetBranch of targetBranches) {
+            for (const targetSemester of targetSemesters) {
+              const pairKey = `${targetBranch.toLowerCase()}___${targetSemester.toLowerCase()}`;
+              if (!existingKeySet.has(pairKey)) {
+                await tx.courseOffering.create({
+                  data: {
+                    courseCode,
+                    courseName,
+                    programme,
+                    batch,
+                    branch: targetBranch,
+                    semester: targetSemester,
+                    courseType,
+                    lecture,
+                    tutorial,
+                    practical,
+                    credits,
+                    courseObjectives,
+                    moduleWiseSyllabusText,
+                    referenceBooksText
+                  }
+                });
+                importedCount++;
+              }
+            }
+          }
+        }
+      } else {
+        for (const targetBranch of targetBranches) {
+          for (const targetSemester of targetSemesters) {
+            await tx.courseOffering.create({
+              data: {
+                courseCode,
+                courseName,
+                programme,
+                batch,
+                branch: targetBranch,
+                semester: targetSemester,
+                courseType,
+                lecture,
+                tutorial,
+                practical,
+                credits,
+                courseObjectives,
+                moduleWiseSyllabusText,
+                referenceBooksText
+              }
+            });
+            importedCount++;
+          }
+        }
       }
     }
 

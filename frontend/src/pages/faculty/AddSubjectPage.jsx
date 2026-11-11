@@ -24,15 +24,23 @@ const AddSubjectPage = () => {
     try {
       setIsSubmitting(true);
 
-      // 1. Create course offering record
+      // 1. Create course offering record(s)
       const result = await adminApi.createCourse(coursePayload);
-      const newCourseId = result?.course?.id;
+      const createdCourses =
+        Array.isArray(result?.courses) && result.courses.length > 0
+          ? result.courses
+          : result?.course
+            ? [result.course]
+            : [];
 
-      // 2. If a PDF document was selected, upload it atomically
-      if (pdfFile && newCourseId) {
-        const formData = new FormData();
-        formData.append('pdf', pdfFile);
-        await adminApi.uploadPdf(newCourseId, formData);
+      // 2. If a PDF document was selected, upload it to each created offering
+      if (pdfFile && createdCourses.length > 0) {
+        for (const createdCourse of createdCourses) {
+          if (!createdCourse?.id) continue;
+          const formData = new FormData();
+          formData.append('pdfFile', pdfFile);
+          await adminApi.uploadPdf(createdCourse.id, formData);
+        }
       }
 
       // 3. Navigate back to faculty dashboard

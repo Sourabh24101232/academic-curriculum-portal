@@ -180,7 +180,7 @@ const ExcelImportModal = ({ isOpen = false, onClose, onSuccess }) => {
                 <div>
                   <p className="font-bold">Official Format Required</p>
                   <p className="text-slate-600 mt-0.5">
-                    Spreadsheets must match the official column structure with valid non-negative integer credits and sequential module headers.
+                    Spreadsheets must match the official column structure with valid non-negative integer credits and sequential module headers. Use comma-separated values in <code>branch</code> and <code>semester</code> for subjects shared across multiple branches/semesters (uniqueness is checked per Course Code + Programme + Batch).
                   </p>
                 </div>
                 <a
@@ -314,17 +314,17 @@ const ExcelImportModal = ({ isOpen = false, onClose, onSuccess }) => {
                             </div>
                           </td>
                           <td className="py-2 px-3">
-                            {row.status === 'VALID' && (
+                            {row.status === 'VALID' && !row.isDuplicate && (
                               <span className="inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 font-semibold rounded text-[10px]">
                                 VALID
                               </span>
                             )}
-                            {row.status === 'DUPLICATE' && (
+                            {(row.status === 'DUPLICATE' || (row.status === 'VALID' && row.isDuplicate)) && (
                               <span className="inline-block px-2 py-0.5 bg-amber-100 text-amber-800 font-semibold rounded text-[10px]">
                                 DUPLICATE
                               </span>
                             )}
-                            {row.status === 'INVALID' && (
+                            {(row.status === 'INVALID' || row.status === 'ERROR') && (
                               <span className="inline-block px-2 py-0.5 bg-red-100 text-red-800 font-semibold rounded text-[10px]">
                                 INVALID
                               </span>
@@ -339,7 +339,9 @@ const ExcelImportModal = ({ isOpen = false, onClose, onSuccess }) => {
                               </ul>
                             ) : (
                               row.isDuplicate ? (
-                                <span className="text-amber-700">Course offering already exists in catalog.</span>
+                                <span className="text-amber-700">
+                                  {row.duplicateMessage || 'Course code already exists for this programme and batch.'}
+                                </span>
                               ) : (
                                 <span className="text-emerald-700">Ready for transactional ingest.</span>
                               )

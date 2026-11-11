@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -121,6 +121,7 @@ const SubjectForm = ({
   onOpenExcelModal
 }) => {
   const navigate = useNavigate();
+  const errorBannerRef = useRef(null);
 
   const [formData, setFormData] = useState({
     courseCode: initialData.courseCode || '',
@@ -128,7 +129,17 @@ const SubjectForm = ({
     programme: initialData.programme || 'BTech',
     batch: initialData.batch || '2024 - 2028',
     branch: initialData.branch || 'CSE',
+    branches: Array.isArray(initialData.branches)
+      ? initialData.branches
+      : initialData.branch
+        ? [initialData.branch]
+        : [],
     semester: initialData.semester || 'Semester 1',
+    semesters: Array.isArray(initialData.semesters)
+      ? initialData.semesters
+      : initialData.semester
+        ? [initialData.semester]
+        : [],
     courseType: initialData.courseType || 'CORE',
     lecture: initialData.lecture !== undefined ? String(initialData.lecture) : '3',
     tutorial: initialData.tutorial !== undefined ? String(initialData.tutorial) : '0',
@@ -143,6 +154,7 @@ const SubjectForm = ({
   const [pdfFileName, setPdfFileName] = useState(initialData.document?.originalFilename || '');
   const [syllabusValidation, setSyllabusValidation] = useState({ isValid: true, message: '' });
   const [formError, setFormError] = useState('');
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
   // Hydrate formData if initialData changes (for Edit mode)
   useEffect(() => {
@@ -153,7 +165,17 @@ const SubjectForm = ({
         programme: initialData.programme || 'BTech',
         batch: initialData.batch || '2024 - 2028',
         branch: initialData.branch || 'CSE',
+        branches: Array.isArray(initialData.branches)
+          ? initialData.branches
+          : initialData.branch
+            ? [initialData.branch]
+            : [],
         semester: initialData.semester || 'Semester 1',
+        semesters: Array.isArray(initialData.semesters)
+          ? initialData.semesters
+          : initialData.semester
+            ? [initialData.semester]
+            : [],
         courseType: initialData.courseType || 'CORE',
         lecture: initialData.lecture !== undefined ? String(initialData.lecture) : '3',
         tutorial: initialData.tutorial !== undefined ? String(initialData.tutorial) : '0',
@@ -202,13 +224,56 @@ const SubjectForm = ({
     }
   };
 
+  const handleToggleMultiSelect = (field, value) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev[field]) ? prev[field] : [];
+      const exists = current.includes(value);
+      const nextValues = exists
+        ? current.filter((item) => item !== value)
+        : [...current, value];
+      return {
+        ...prev,
+        [field]: nextValues
+      };
+    });
+  };
+
+  const handleToggleAll = (field, allOptions) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev[field]) ? prev[field] : [];
+      const allSelected = current.length === allOptions.length;
+      return {
+        ...prev,
+        [field]: allSelected ? [] : [...allOptions]
+      };
+    });
+  };
+
+  const reportFormError = (message) => {
+    setFormError(message);
+    requestAnimationFrame(() => {
+      errorBannerRef.current?.focus();
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError('');
+    setHasAttemptedSubmit(true);
 
     // 1. Mandatory metadata check
     if (!formData.courseCode.trim() || !formData.courseName.trim()) {
-      setFormError('Course Code and Course Name are mandatory.');
+      reportFormError('Course Code and Course Name are mandatory.');
+      return;
+    }
+
+    if (!isEdit && formData.branches.length === 0) {
+      reportFormError('Please select at least one branch.');
+      return;
+    }
+
+    if (!isEdit && formData.semesters.length === 0) {
+      reportFormError('Please select at least one semester.');
       return;
     }
 
@@ -216,7 +281,7 @@ const SubjectForm = ({
     const intFields = ['lecture', 'tutorial', 'practical', 'credits'];
     for (const f of intFields) {
       if (formData[f] === '' || isNaN(Number(formData[f])) || Number(formData[f]) < 0) {
-        setFormError(`Field '${f}' must be a valid non-negative whole integer.`);
+        reportFormError(`Field '${f}' must be a valid non-negative whole integer.`);
         return;
       }
     }
@@ -224,25 +289,32 @@ const SubjectForm = ({
     // 3. Syllabus validation check
     const validation = validateSyllabusClient(formData.moduleWiseSyllabusText);
     if (!validation.isValid) {
-      setFormError(validation.message);
+      reportFormError(validation.message);
       return;
     }
 
     if (!formData.courseObjectives.trim()) {
-      setFormError('Course Objectives cannot be empty.');
+      reportFormError('Course Objectives cannot be empty.');
       return;
     }
 
     if (!formData.referenceBooksText.trim()) {
-      setFormError('Reference Books cannot be empty.');
+      reportFormError('Reference Books cannot be empty.');
       return;
     }
 
     try {
+      const selectedBranches = isEdit ? [formData.branch] : formData.branches;
+      const selectedSemesters = isEdit ? [formData.semester] : formData.semesters;
+
       const payload = {
         ...formData,
         courseCode: formData.courseCode.trim().toUpperCase(),
         courseName: formData.courseName.trim(),
+        branch: selectedBranches[0],
+        semester: selectedSemesters[0],
+        branches: selectedBranches,
+        semesters: selectedSemesters,
         lecture: parseInt(formData.lecture, 10),
         tutorial: parseInt(formData.tutorial, 10),
         practical: parseInt(formData.practical, 10),
@@ -254,7 +326,7 @@ const SubjectForm = ({
 
       await onSubmit(payload, pdfFile);
     } catch (err) {
-      setFormError(err.message || 'Failed to save course offering.');
+      reportFormError(err.message || 'Failed to save course offering.');
     }
   };
 
@@ -291,8 +363,11 @@ const SubjectForm = ({
       {/* Form Error Banner */}
       {formError && (
         <div
-          className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center gap-2 shadow-sm"
+          ref={errorBannerRef}
+          tabIndex={-1}
+          className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center gap-2 shadow-sm focus:outline-none focus:ring-2 focus:ring-red-400"
           role="alert"
+          aria-live="polite"
         >
           <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
           <span>{formError}</span>
@@ -342,7 +417,7 @@ const SubjectForm = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-2">
+        <div className={`grid grid-cols-1 ${isEdit ? 'sm:grid-cols-2 lg:grid-cols-5' : 'sm:grid-cols-3'} gap-4 pt-2`}>
           {/* Programme */}
           <div>
             <label htmlFor="course-programme" className="block text-xs font-semibold text-slate-700 mb-1">
@@ -350,6 +425,7 @@ const SubjectForm = ({
             </label>
             <select
               id="course-programme"
+              name="programme"
               value={formData.programme}
               onChange={(e) => setFormData((prev) => ({ ...prev, programme: e.target.value }))}
               className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
@@ -367,6 +443,7 @@ const SubjectForm = ({
             </label>
             <select
               id="course-batch"
+              name="batch"
               value={formData.batch}
               onChange={(e) => setFormData((prev) => ({ ...prev, batch: e.target.value }))}
               className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
@@ -377,39 +454,45 @@ const SubjectForm = ({
             </select>
           </div>
 
-          {/* Branch */}
-          <div>
-            <label htmlFor="course-branch" className="block text-xs font-semibold text-slate-700 mb-1">
-              Branch <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="course-branch"
-              value={formData.branch}
-              onChange={(e) => setFormData((prev) => ({ ...prev, branch: e.target.value }))}
-              className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
-            >
-              {DEFAULT_BRANCHES.map((br) => (
-                <option key={br} value={br}>{br}</option>
-              ))}
-            </select>
-          </div>
+          {isEdit && (
+            <>
+              {/* Branch (Single in Edit Mode) */}
+              <div>
+                <label htmlFor="course-branch" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Branch <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="course-branch"
+                  name="branch"
+                  value={formData.branch}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, branch: e.target.value }))}
+                  className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
+                >
+                  {DEFAULT_BRANCHES.map((br) => (
+                    <option key={br} value={br}>{br}</option>
+                  ))}
+                </select>
+              </div>
 
-          {/* Semester */}
-          <div>
-            <label htmlFor="course-semester" className="block text-xs font-semibold text-slate-700 mb-1">
-              Semester <span className="text-red-500">*</span>
-            </label>
-            <select
-              id="course-semester"
-              value={formData.semester}
-              onChange={(e) => setFormData((prev) => ({ ...prev, semester: e.target.value }))}
-              className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
-            >
-              {DEFAULT_SEMESTERS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
+              {/* Semester (Single in Edit Mode) */}
+              <div>
+                <label htmlFor="course-semester" className="block text-xs font-semibold text-slate-700 mb-1">
+                  Semester <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="course-semester"
+                  name="semester"
+                  value={formData.semester}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, semester: e.target.value }))}
+                  className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
+                >
+                  {DEFAULT_SEMESTERS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
 
           {/* Course Type */}
           <div>
@@ -418,6 +501,7 @@ const SubjectForm = ({
             </label>
             <select
               id="course-type"
+              name="courseType"
               value={formData.courseType}
               onChange={(e) => setFormData((prev) => ({ ...prev, courseType: e.target.value }))}
               className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md py-2 px-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy"
@@ -427,6 +511,127 @@ const SubjectForm = ({
             </select>
           </div>
         </div>
+
+        {/* Multi-Branch & Multi-Semester Selection (Create Mode Only) */}
+        {!isEdit && (
+          <div className="space-y-4 pt-2">
+            {/* Branches Multi-Select Fieldset */}
+            <fieldset
+              aria-invalid={hasAttemptedSubmit && formData.branches.length === 0 ? 'true' : undefined}
+              aria-describedby="branches-help"
+              className={`border rounded-md p-3 sm:p-4 bg-slate-50/40 ${
+                hasAttemptedSubmit && formData.branches.length === 0
+                  ? 'border-red-400 bg-red-50/30'
+                  : 'border-slate-200'
+              }`}
+            >
+              <legend className="px-1 text-xs font-semibold text-slate-700">
+                Branches <span className="text-red-500" aria-hidden="true">*</span>{' '}
+                <span className="text-[11px] font-normal text-slate-500">
+                  ({formData.branches.length} selected)
+                </span>
+              </legend>
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <span id="branches-help" className="text-[11px] text-slate-500">
+                  Select one or more branches where this subject is offered.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleAll('branches', DEFAULT_BRANCHES)}
+                  className="text-[11px] font-semibold text-institute-navy hover:underline focus-visible:outline-2 focus-visible:outline-institute-navy focus-visible:outline-offset-2 rounded"
+                >
+                  {formData.branches.length === DEFAULT_BRANCHES.length ? 'Clear all' : 'Select all'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {DEFAULT_BRANCHES.map((br) => {
+                  const isChecked = formData.branches.includes(br);
+                  const inputId = `course-branch-${br.replace(/\s+/g, '-').toLowerCase()}`;
+                  return (
+                    <label
+                      key={br}
+                      htmlFor={inputId}
+                      className={`brand-checkbox-label flex items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-md border text-xs sm:text-sm cursor-pointer transition-colors ${
+                        isChecked
+                          ? 'bg-institute-navy/5 border-institute-navy text-institute-navy font-semibold'
+                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 font-medium'
+                      }`}
+                    >
+                      <input
+                        id={inputId}
+                        type="checkbox"
+                        name="branches"
+                        value={br}
+                        checked={isChecked}
+                        onChange={() => handleToggleMultiSelect('branches', br)}
+                        className="brand-checkbox"
+                      />
+                      <span>{br}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            {/* Semesters Multi-Select Fieldset */}
+            <fieldset
+              aria-invalid={hasAttemptedSubmit && formData.semesters.length === 0 ? 'true' : undefined}
+              aria-describedby="semesters-help"
+              className={`border rounded-md p-3 sm:p-4 bg-slate-50/40 ${
+                hasAttemptedSubmit && formData.semesters.length === 0
+                  ? 'border-red-400 bg-red-50/30'
+                  : 'border-slate-200'
+              }`}
+            >
+              <legend className="px-1 text-xs font-semibold text-slate-700">
+                Semesters <span className="text-red-500" aria-hidden="true">*</span>{' '}
+                <span className="text-[11px] font-normal text-slate-500">
+                  ({formData.semesters.length} selected)
+                </span>
+              </legend>
+              <div className="flex items-center justify-between gap-2 mb-2.5">
+                <span id="semesters-help" className="text-[11px] text-slate-500">
+                  Select one or more semesters where this subject is taught.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleToggleAll('semesters', DEFAULT_SEMESTERS)}
+                  className="text-[11px] font-semibold text-institute-navy hover:underline focus-visible:outline-2 focus-visible:outline-institute-navy focus-visible:outline-offset-2 rounded"
+                >
+                  {formData.semesters.length === DEFAULT_SEMESTERS.length ? 'Clear all' : 'Select all'}
+                </button>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                {DEFAULT_SEMESTERS.map((sem) => {
+                  const isChecked = formData.semesters.includes(sem);
+                  const inputId = `course-semester-${sem.replace(/\s+/g, '-').toLowerCase()}`;
+                  return (
+                    <label
+                      key={sem}
+                      htmlFor={inputId}
+                      className={`brand-checkbox-label flex items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-md border text-xs sm:text-sm cursor-pointer transition-colors ${
+                        isChecked
+                          ? 'bg-institute-navy/5 border-institute-navy text-institute-navy font-semibold'
+                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 font-medium'
+                      }`}
+                    >
+                      <input
+                        id={inputId}
+                        type="checkbox"
+                        name="semesters"
+                        value={sem}
+                        checked={isChecked}
+                        onChange={() => handleToggleMultiSelect('semesters', sem)}
+                        className="brand-checkbox"
+                      />
+                      <span>{sem}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </fieldset>
+          </div>
+        )}
       </div>
 
       {/* 2. Strict Integer Credit Structure (L / T / P / C) */}
