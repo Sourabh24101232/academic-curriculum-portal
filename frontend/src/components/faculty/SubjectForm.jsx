@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
@@ -10,7 +10,9 @@ import {
   BookOpen,
   FileText,
   FileSpreadsheet,
-  Download
+  Download,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import { adminApi } from '../../services/api';
 
@@ -101,6 +103,279 @@ export const validateSyllabusClient = (text) => {
       ? `Valid module syntax: ${moduleCount} sequential ${moduleCount === 1 ? 'module' : 'modules'} detected.`
       : 'Syllabus text entered.'
   };
+};
+
+/**
+ * Accessible Multi-Select Dropdown Component
+ * Supports selecting multiple options with checkmark indicators, keyboard listbox navigation,
+ * select/clear all actions, outside/focus-out dismissal, and viewport-edge flip detection.
+ */
+const MultiSelectDropdown = ({
+  id,
+  name,
+  label,
+  options,
+  selectedValues,
+  placeholder,
+  hasError = false,
+  onToggleOption,
+  onToggleAll
+}) => {
+  const instanceId = useId();
+  const baseId = id || instanceId;
+  const triggerId = baseId;
+  const labelId = `${baseId}-label`;
+  const valueId = `${baseId}-value`;
+  const listboxId = `${baseId}-listbox`;
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [openUpward, setOpenUpward] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
+
+  const containerRef = useRef(null);
+  const triggerRef = useRef(null);
+  const optionRefs = useRef([]);
+
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') return undefined;
+
+    if (typeof window !== 'undefined' && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      setOpenUpward(spaceBelow < 260 && spaceAbove > spaceBelow);
+      setAlignRight(rect.left + 224 > window.innerWidth - 16);
+    }
+
+    const handlePointerDown = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleFocusIn = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('focusin', handleFocusIn);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('focusin', handleFocusIn);
+    };
+  }, [isOpen]);
+
+  const openAndFocusOption = (targetIndex) => {
+    const clampedIndex = Math.max(0, Math.min(options.length - 1, targetIndex));
+    setActiveIndex(clampedIndex);
+    setIsOpen(true);
+    requestAnimationFrame(() => {
+      optionRefs.current[clampedIndex]?.focus();
+    });
+  };
+
+  const closeAndRestoreFocus = () => {
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
+
+  const handleTriggerClick = (event) => {
+    if (isOpen) {
+      setIsOpen(false);
+      return;
+    }
+
+    const firstSelectedIdx = options.findIndex((opt) => selectedValues.includes(opt));
+    const initialIdx = firstSelectedIdx >= 0 ? firstSelectedIdx : 0;
+
+    if (event.detail === 0) {
+      openAndFocusOption(initialIdx);
+    } else {
+      setActiveIndex(initialIdx);
+      setIsOpen(true);
+    }
+  };
+
+  const handleTriggerKeyDown = (event) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (!isOpen) {
+        const firstSelectedIdx = options.findIndex((opt) => selectedValues.includes(opt));
+        openAndFocusOption(firstSelectedIdx >= 0 ? firstSelectedIdx : 0);
+      } else {
+        openAndFocusOption(activeIndex);
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!isOpen) {
+        openAndFocusOption(options.length - 1);
+      } else {
+        openAndFocusOption(activeIndex);
+      }
+    } else if (event.key === 'Escape' && isOpen) {
+      event.preventDefault();
+      setIsOpen(false);
+    }
+  };
+
+  const handleOptionKeyDown = (event, index) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const next = (index + 1) % options.length;
+      setActiveIndex(next);
+      optionRefs.current[next]?.focus();
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const prev = (index - 1 + options.length) % options.length;
+      setActiveIndex(prev);
+      optionRefs.current[prev]?.focus();
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      setActiveIndex(0);
+      optionRefs.current[0]?.focus();
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      const last = options.length - 1;
+      setActiveIndex(last);
+      optionRefs.current[last]?.focus();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeAndRestoreFocus();
+    }
+  };
+
+  const allSelected = options.length > 0 && selectedValues.length === options.length;
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label
+        id={labelId}
+        htmlFor={triggerId}
+        className="block text-xs font-semibold text-slate-700 mb-1"
+      >
+        {label} <span className="text-red-500" aria-hidden="true">*</span>
+      </label>
+
+      <button
+        ref={triggerRef}
+        id={triggerId}
+        name={name}
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-controls={isOpen ? listboxId : undefined}
+        aria-labelledby={`${labelId} ${valueId}`}
+        aria-invalid={hasError ? 'true' : undefined}
+        onClick={handleTriggerClick}
+        onKeyDown={handleTriggerKeyDown}
+        className={`w-full flex items-center justify-between gap-2 text-left text-xs sm:text-sm rounded-md py-2 px-3 border transition-colors focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy ${
+          hasError
+            ? 'bg-red-50/40 border-red-400 text-slate-800'
+            : isOpen
+              ? 'bg-white border-institute-navy text-slate-800 ring-1 ring-institute-navy/20'
+              : 'bg-slate-50 border-slate-300 text-slate-800 hover:bg-white'
+        }`}
+      >
+        <span id={valueId} className="flex items-center gap-1.5 min-w-0 flex-1">
+          {selectedValues.length === 0 ? (
+            <span className="truncate text-slate-600">{placeholder}</span>
+          ) : (
+            <>
+              <span className="truncate text-slate-800 font-medium">
+                {selectedValues.join(', ')}
+              </span>
+              {selectedValues.length > 1 && (
+                <span className="shrink-0 text-[11px] font-semibold text-institute-navy">
+                  ({selectedValues.length})
+                </span>
+              )}
+            </>
+          )}
+        </span>
+        <ChevronDown
+          aria-hidden="true"
+          className={`w-4 h-4 shrink-0 text-slate-600 transition-transform duration-150 motion-reduce:transition-none ${
+            isOpen ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              closeAndRestoreFocus();
+            }
+          }}
+          className={`absolute z-30 min-w-full w-56 sm:w-60 bg-white border border-slate-200 rounded-md shadow-lg overflow-hidden ${
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1'
+          } ${alignRight ? 'right-0' : 'left-0'}`}
+        >
+          <div className="px-3 py-2 border-b border-slate-100 bg-slate-50 flex items-center justify-between gap-2">
+            <span className="text-[11px] font-medium text-slate-600">
+              {selectedValues.length} of {options.length} selected
+            </span>
+            <button
+              type="button"
+              onClick={onToggleAll}
+              className="text-[11px] font-semibold text-institute-navy hover:underline focus-visible:outline-2 focus-visible:outline-institute-navy focus-visible:outline-offset-2 rounded"
+            >
+              {allSelected ? 'Clear all' : 'Select all'}
+            </button>
+          </div>
+
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-multiselectable="true"
+            aria-labelledby={labelId}
+            className="max-h-60 overflow-y-auto py-1"
+          >
+            {options.map((option, idx) => {
+              const isSelected = selectedValues.includes(option);
+              return (
+                <button
+                  key={option}
+                  ref={(el) => {
+                    optionRefs.current[idx] = el;
+                  }}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  tabIndex={activeIndex === idx ? 0 : -1}
+                  onClick={() => {
+                    setActiveIndex(idx);
+                    onToggleOption(option);
+                  }}
+                  onKeyDown={(e) => handleOptionKeyDown(e, idx)}
+                  className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-left text-xs sm:text-sm min-h-[44px] sm:min-h-[36px] transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-slate-100 ${
+                    isSelected
+                      ? 'bg-institute-navy/5 text-institute-navy font-semibold hover:bg-institute-navy/10'
+                      : 'text-slate-700 hover:bg-slate-50 font-normal'
+                  }`}
+                >
+                  <span className="truncate">{option}</span>
+                  <Check
+                    aria-hidden="true"
+                    className={`w-4 h-4 shrink-0 text-institute-navy transition-opacity ${
+                      isSelected ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 /**
@@ -417,7 +692,7 @@ const SubjectForm = ({
           </div>
         </div>
 
-        <div className={`grid grid-cols-1 ${isEdit ? 'sm:grid-cols-2 lg:grid-cols-5' : 'sm:grid-cols-3'} gap-4 pt-2`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 pt-2">
           {/* Programme */}
           <div>
             <label htmlFor="course-programme" className="block text-xs font-semibold text-slate-700 mb-1">
@@ -454,7 +729,7 @@ const SubjectForm = ({
             </select>
           </div>
 
-          {isEdit && (
+          {isEdit ? (
             <>
               {/* Branch (Single in Edit Mode) */}
               <div>
@@ -492,6 +767,34 @@ const SubjectForm = ({
                 </select>
               </div>
             </>
+          ) : (
+            <>
+              {/* Branches Multi-Select Dropdown (Create Mode Only) */}
+              <MultiSelectDropdown
+                id="course-branches"
+                name="branches"
+                label="Branches"
+                options={DEFAULT_BRANCHES}
+                selectedValues={formData.branches}
+                placeholder="Select branches"
+                hasError={hasAttemptedSubmit && formData.branches.length === 0}
+                onToggleOption={(val) => handleToggleMultiSelect('branches', val)}
+                onToggleAll={() => handleToggleAll('branches', DEFAULT_BRANCHES)}
+              />
+
+              {/* Semesters Multi-Select Dropdown (Create Mode Only) */}
+              <MultiSelectDropdown
+                id="course-semesters"
+                name="semesters"
+                label="Semesters"
+                options={DEFAULT_SEMESTERS}
+                selectedValues={formData.semesters}
+                placeholder="Select semesters"
+                hasError={hasAttemptedSubmit && formData.semesters.length === 0}
+                onToggleOption={(val) => handleToggleMultiSelect('semesters', val)}
+                onToggleAll={() => handleToggleAll('semesters', DEFAULT_SEMESTERS)}
+              />
+            </>
           )}
 
           {/* Course Type */}
@@ -511,127 +814,6 @@ const SubjectForm = ({
             </select>
           </div>
         </div>
-
-        {/* Multi-Branch & Multi-Semester Selection (Create Mode Only) */}
-        {!isEdit && (
-          <div className="space-y-4 pt-2">
-            {/* Branches Multi-Select Fieldset */}
-            <fieldset
-              aria-invalid={hasAttemptedSubmit && formData.branches.length === 0 ? 'true' : undefined}
-              aria-describedby="branches-help"
-              className={`border rounded-md p-3 sm:p-4 bg-slate-50/40 ${
-                hasAttemptedSubmit && formData.branches.length === 0
-                  ? 'border-red-400 bg-red-50/30'
-                  : 'border-slate-200'
-              }`}
-            >
-              <legend className="px-1 text-xs font-semibold text-slate-700">
-                Branches <span className="text-red-500" aria-hidden="true">*</span>{' '}
-                <span className="text-[11px] font-normal text-slate-500">
-                  ({formData.branches.length} selected)
-                </span>
-              </legend>
-              <div className="flex items-center justify-between gap-2 mb-2.5">
-                <span id="branches-help" className="text-[11px] text-slate-500">
-                  Select one or more branches where this subject is offered.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleToggleAll('branches', DEFAULT_BRANCHES)}
-                  className="text-[11px] font-semibold text-institute-navy hover:underline focus-visible:outline-2 focus-visible:outline-institute-navy focus-visible:outline-offset-2 rounded"
-                >
-                  {formData.branches.length === DEFAULT_BRANCHES.length ? 'Clear all' : 'Select all'}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {DEFAULT_BRANCHES.map((br) => {
-                  const isChecked = formData.branches.includes(br);
-                  const inputId = `course-branch-${br.replace(/\s+/g, '-').toLowerCase()}`;
-                  return (
-                    <label
-                      key={br}
-                      htmlFor={inputId}
-                      className={`brand-checkbox-label flex items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-md border text-xs sm:text-sm cursor-pointer transition-colors ${
-                        isChecked
-                          ? 'bg-institute-navy/5 border-institute-navy text-institute-navy font-semibold'
-                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 font-medium'
-                      }`}
-                    >
-                      <input
-                        id={inputId}
-                        type="checkbox"
-                        name="branches"
-                        value={br}
-                        checked={isChecked}
-                        onChange={() => handleToggleMultiSelect('branches', br)}
-                        className="brand-checkbox"
-                      />
-                      <span>{br}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </fieldset>
-
-            {/* Semesters Multi-Select Fieldset */}
-            <fieldset
-              aria-invalid={hasAttemptedSubmit && formData.semesters.length === 0 ? 'true' : undefined}
-              aria-describedby="semesters-help"
-              className={`border rounded-md p-3 sm:p-4 bg-slate-50/40 ${
-                hasAttemptedSubmit && formData.semesters.length === 0
-                  ? 'border-red-400 bg-red-50/30'
-                  : 'border-slate-200'
-              }`}
-            >
-              <legend className="px-1 text-xs font-semibold text-slate-700">
-                Semesters <span className="text-red-500" aria-hidden="true">*</span>{' '}
-                <span className="text-[11px] font-normal text-slate-500">
-                  ({formData.semesters.length} selected)
-                </span>
-              </legend>
-              <div className="flex items-center justify-between gap-2 mb-2.5">
-                <span id="semesters-help" className="text-[11px] text-slate-500">
-                  Select one or more semesters where this subject is taught.
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleToggleAll('semesters', DEFAULT_SEMESTERS)}
-                  className="text-[11px] font-semibold text-institute-navy hover:underline focus-visible:outline-2 focus-visible:outline-institute-navy focus-visible:outline-offset-2 rounded"
-                >
-                  {formData.semesters.length === DEFAULT_SEMESTERS.length ? 'Clear all' : 'Select all'}
-                </button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                {DEFAULT_SEMESTERS.map((sem) => {
-                  const isChecked = formData.semesters.includes(sem);
-                  const inputId = `course-semester-${sem.replace(/\s+/g, '-').toLowerCase()}`;
-                  return (
-                    <label
-                      key={sem}
-                      htmlFor={inputId}
-                      className={`brand-checkbox-label flex items-center gap-2.5 min-h-[44px] px-3 py-2 rounded-md border text-xs sm:text-sm cursor-pointer transition-colors ${
-                        isChecked
-                          ? 'bg-institute-navy/5 border-institute-navy text-institute-navy font-semibold'
-                          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 font-medium'
-                      }`}
-                    >
-                      <input
-                        id={inputId}
-                        type="checkbox"
-                        name="semesters"
-                        value={sem}
-                        checked={isChecked}
-                        onChange={() => handleToggleMultiSelect('semesters', sem)}
-                        className="brand-checkbox"
-                      />
-                      <span>{sem}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </fieldset>
-          </div>
-        )}
       </div>
 
       {/* 2. Strict Integer Credit Structure (L / T / P / C) */}
