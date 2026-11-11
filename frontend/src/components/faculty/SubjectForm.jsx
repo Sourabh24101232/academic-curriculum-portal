@@ -15,6 +15,7 @@ import {
   Check
 } from 'lucide-react';
 import { adminApi } from '../../services/api';
+import { formatPastedObjectivesText } from '../../utils/pasteSpacing';
 
 const DEFAULT_PROGRAMMES = ['BTech', 'MTech', 'PhD'];
 const DEFAULT_BATCHES = [
@@ -499,6 +500,56 @@ const SubjectForm = ({
     }
   };
 
+  const handleCourseObjectivesPaste = (e) => {
+    const clipboardData = e.clipboardData;
+    if (!clipboardData) return;
+
+    const rawPlainText = clipboardData.getData('text/plain') || '';
+    const rawHtml = clipboardData.getData('text/html') || '';
+    if (!rawPlainText && !rawHtml) return;
+
+    const formattedText = formatPastedObjectivesText(rawPlainText, rawHtml);
+    if (!formattedText || formattedText === rawPlainText) {
+      return;
+    }
+
+    e.preventDefault();
+    const textarea = e.currentTarget;
+    const selectionStart = textarea.selectionStart ?? formData.courseObjectives.length;
+    const selectionEnd = textarea.selectionEnd ?? selectionStart;
+
+    setFormData((prev) => {
+      const current = prev.courseObjectives || '';
+      const before = current.slice(0, selectionStart);
+      const after = current.slice(selectionEnd);
+      const needsLeadingSpace =
+        before.length > 0 &&
+        !/[\s(\["']$/.test(before) &&
+        !/^[\s,.;:!?)\]"']/.test(formattedText);
+      const needsTrailingSpace =
+        after.length > 0 &&
+        !/^[\s,.;:!?)\]"']/.test(after) &&
+        !/[\s(\["']$/.test(formattedText);
+      const inserted =
+        (needsLeadingSpace ? ' ' : '') +
+        formattedText +
+        (needsTrailingSpace ? ' ' : '');
+      const updated = `${before}${inserted}${after}`;
+      const nextCaret = before.length + inserted.length;
+
+      requestAnimationFrame(() => {
+        if (textarea && typeof textarea.setSelectionRange === 'function') {
+          textarea.setSelectionRange(nextCaret, nextCaret);
+        }
+      });
+
+      return {
+        ...prev,
+        courseObjectives: updated
+      };
+    });
+  };
+
   const handleToggleMultiSelect = (field, value) => {
     setFormData((prev) => {
       const current = Array.isArray(prev[field]) ? prev[field] : [];
@@ -907,6 +958,7 @@ const SubjectForm = ({
           required
           value={formData.courseObjectives}
           onChange={(e) => setFormData((prev) => ({ ...prev, courseObjectives: e.target.value }))}
+          onPaste={handleCourseObjectivesPaste}
           placeholder="State the core educational aims and target learning outcomes of this course offering..."
           className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
         />
