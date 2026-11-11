@@ -38,8 +38,8 @@ const DEFAULT_SEMESTERS = [
 
 /**
  * Live Client-Side Syllabus Syntax Validator
- * Verifies sequential Module N syntax and positive integer hours in parentheses:
- * Format: Module <N>: <Heading/Topics> (<Hours>)
+ * Verifies sequential Module N syntax:
+ * Format: Module <N>: <Topic List>
  */
 export const validateSyllabusClient = (text) => {
   if (!text || !text.trim()) {
@@ -65,7 +65,7 @@ export const validateSyllabusClient = (text) => {
         return {
           isValid: false,
           line: i + 1,
-          message: `Line ${i + 1}: Malformed module header. Use format "Module <N>: <Topics> (<Hours>)"`
+          message: `Line ${i + 1}: Malformed module header. Use format "Module <N>: <Topic List>"`
         };
       }
 
@@ -76,20 +76,6 @@ export const validateSyllabusClient = (text) => {
           line: i + 1,
           message: `Line ${i + 1}: Module out of order. Expected Module ${expectedModuleNum}, found Module ${parsedNum}.`
         };
-      }
-
-      // Check optional hours syntax if present
-      const remainder = match[2].trim();
-      const hoursMatch = remainder.match(/\(([^)]+)\)\s*$/);
-      if (hoursMatch) {
-        const hoursVal = hoursMatch[1].trim();
-        if (!/^\d+$/.test(hoursVal) || parseInt(hoursVal, 10) <= 0) {
-          return {
-            isValid: false,
-            line: i + 1,
-            message: `Line ${i + 1}: Hours in parentheses must be a positive integer, e.g. (8).`
-          };
-        }
       }
 
       expectedModuleNum++;
@@ -972,7 +958,7 @@ const SubjectForm = ({
               Module-Wise Syllabus Text <span className="text-red-500">*</span>
             </label>
             <span className="text-xs text-slate-500">
-              Format: <code>Module &lt;N&gt;: &lt;Topic List&gt; (&lt;Hours&gt;)</code>
+              Format: <code>Module &lt;N&gt;: &lt;Topic List&gt;</code>
             </span>
           </div>
 
@@ -1001,11 +987,11 @@ const SubjectForm = ({
           required
           value={formData.moduleWiseSyllabusText}
           onChange={(e) => setFormData((prev) => ({ ...prev, moduleWiseSyllabusText: e.target.value }))}
-          placeholder={`Module 1: Introduction to DBMS Architecture and Data Modeling (8)
-Module 2: Relational Model, ER-Diagrams, and Relational Algebra (10)
-Module 3: Structured Query Language (SQL) and Normalization (10)
-Module 4: Transaction Processing, Concurrency Control, and Recovery (8)
-Module 5: Indexing Structures, B-Trees, and Query Optimization (6)`}
+          placeholder={`Module 1: Introduction to DBMS Architecture and Data Modeling
+Module 2: Relational Model, ER-Diagrams, and Relational Algebra
+Module 3: Structured Query Language (SQL) and Normalization
+Module 4: Transaction Processing, Concurrency Control, and Recovery
+Module 5: Indexing Structures, B-Trees, and Query Optimization`}
           className="w-full text-xs sm:text-sm font-mono bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
         />
       </div>

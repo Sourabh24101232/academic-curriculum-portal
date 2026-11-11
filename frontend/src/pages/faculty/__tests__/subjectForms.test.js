@@ -33,7 +33,7 @@ const mockCourseData = {
   practical: 0,
   credits: 3,
   courseObjectives: 'Introduce database systems, ER models, normalization and transactions.',
-  moduleWiseSyllabusText: 'Module 1: Relational Algebra (8)\nModule 2: SQL and Normalization (10)',
+  moduleWiseSyllabusText: 'Module 1: Relational Algebra\nModule 2: SQL and Normalization',
   referenceBooksText: '1. Silberschatz, Database System Concepts.',
   hasOfficialPdf: true,
   document: {
@@ -44,27 +44,33 @@ const mockCourseData = {
 
 // 1. Live Client-Side Syllabus Syntax Validator Test
 {
-  // Valid multiline text
-  const validResult = validateSyllabusClient('Module 1: Intro (8)\nModule 2: Advanced SQL (10)');
+  // Valid multiline text without hours
+  const validResult = validateSyllabusClient('Module 1: Intro\nModule 2: Advanced SQL');
   assert.strictEqual(validResult.isValid, true, 'Valid syllabus should pass syntax checker');
   assert.strictEqual(validResult.moduleCount, 2, 'Should detect 2 modules');
+
+  // Topic list ending with parenthetical clarification must be accepted
+  const parentheticalTopicsResult = validateSyllabusClient('Module 1: Normalization (1NF, 2NF, 3NF, BCNF)');
+  assert.strictEqual(parentheticalTopicsResult.isValid, true, 'Parenthetical topic details should pass');
+  assert.strictEqual(parentheticalTopicsResult.moduleCount, 1, 'Should detect 1 module');
 
   // Empty syllabus
   const emptyResult = validateSyllabusClient('');
   assert.strictEqual(emptyResult.isValid, false, 'Empty text should fail');
 
   // Out of sequence module numbering
-  const outOfOrderResult = validateSyllabusClient('Module 1: Intro (8)\nModule 3: Jumped Module (10)');
+  const outOfOrderResult = validateSyllabusClient('Module 1: Intro\nModule 3: Jumped Module');
   assert.strictEqual(outOfOrderResult.isValid, false, 'Out-of-order module must fail');
   assert.strictEqual(outOfOrderResult.line, 2, 'Should identify error on Line 2');
   assert(outOfOrderResult.message.includes('Expected Module 2'), 'Error message must state expected module sequence');
 
-  // Invalid non-integer hours in parentheses
-  const badHoursResult = validateSyllabusClient('Module 1: Intro (eight)');
-  assert.strictEqual(badHoursResult.isValid, false, 'Non-integer hours must fail');
-  assert.strictEqual(badHoursResult.line, 1, 'Should identify error on Line 1');
+  // Malformed module header without numeric module index
+  const badHeaderResult = validateSyllabusClient('Module One: Intro');
+  assert.strictEqual(badHeaderResult.isValid, false, 'Non-numeric module header must fail');
+  assert.strictEqual(badHeaderResult.line, 1, 'Should identify error on Line 1');
+  assert(badHeaderResult.message.includes('Module <N>: <Topic List>'), 'Error message must reference Module <N>: <Topic List>');
 
-  console.log('✓ validateSyllabusClient: Accurately validates sequence, positive integer hours, and reports line numbers');
+  console.log('✓ validateSyllabusClient: Accurately validates sequence and reports line numbers');
 }
 
 // 2. SubjectForm: Field Rendering & Outdated-PDF Banner Lifecycle
