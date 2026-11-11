@@ -15,7 +15,7 @@ import {
   Check
 } from 'lucide-react';
 import { adminApi } from '../../services/api';
-import { formatPastedObjectivesText } from '../../utils/pasteSpacing';
+import { formatPastedText } from '../../utils/pasteSpacing';
 
 const DEFAULT_PROGRAMMES = ['BTech', 'MTech', 'PhD'];
 const DEFAULT_BATCHES = [
@@ -486,7 +486,7 @@ const SubjectForm = ({
     }
   };
 
-  const handleCourseObjectivesPaste = (e) => {
+  const handleFormattedPaste = (field) => (e) => {
     const clipboardData = e.clipboardData;
     if (!clipboardData) return;
 
@@ -494,18 +494,18 @@ const SubjectForm = ({
     const rawHtml = clipboardData.getData('text/html') || '';
     if (!rawPlainText && !rawHtml) return;
 
-    const formattedText = formatPastedObjectivesText(rawPlainText, rawHtml);
+    const formattedText = formatPastedText(rawPlainText, rawHtml);
     if (!formattedText || formattedText === rawPlainText) {
       return;
     }
 
     e.preventDefault();
     const textarea = e.currentTarget;
-    const selectionStart = textarea.selectionStart ?? formData.courseObjectives.length;
+    const selectionStart = textarea.selectionStart ?? (formData[field] || '').length;
     const selectionEnd = textarea.selectionEnd ?? selectionStart;
 
     setFormData((prev) => {
-      const current = prev.courseObjectives || '';
+      const current = prev[field] || '';
       const before = current.slice(0, selectionStart);
       const after = current.slice(selectionEnd);
       const needsLeadingSpace =
@@ -531,7 +531,7 @@ const SubjectForm = ({
 
       return {
         ...prev,
-        courseObjectives: updated
+        [field]: updated
       };
     });
   };
@@ -944,7 +944,7 @@ const SubjectForm = ({
           required
           value={formData.courseObjectives}
           onChange={(e) => setFormData((prev) => ({ ...prev, courseObjectives: e.target.value }))}
-          onPaste={handleCourseObjectivesPaste}
+          onPaste={handleFormattedPaste('courseObjectives')}
           placeholder="State the core educational aims and target learning outcomes of this course offering..."
           className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
         />
@@ -987,6 +987,7 @@ const SubjectForm = ({
           required
           value={formData.moduleWiseSyllabusText}
           onChange={(e) => setFormData((prev) => ({ ...prev, moduleWiseSyllabusText: e.target.value }))}
+          onPaste={handleFormattedPaste('moduleWiseSyllabusText')}
           placeholder={`Module 1: Introduction to DBMS Architecture and Data Modeling
 Module 2: Relational Model, ER-Diagrams, and Relational Algebra
 Module 3: Structured Query Language (SQL) and Normalization
@@ -996,10 +997,10 @@ Module 5: Indexing Structures, B-Trees, and Query Optimization`}
         />
       </div>
 
-      {/* 5. Reference Books */}
+      {/* 5. Text and Reference */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
         <label htmlFor="reference-books" className="block text-sm font-bold uppercase tracking-wider text-institute-navy">
-          Reference Books &amp; Bibliography <span className="text-red-500">*</span>
+          Text and Reference <span className="text-red-500">*</span>
         </label>
         <textarea
           id="reference-books"
@@ -1007,6 +1008,7 @@ Module 5: Indexing Structures, B-Trees, and Query Optimization`}
           required
           value={formData.referenceBooksText}
           onChange={(e) => setFormData((prev) => ({ ...prev, referenceBooksText: e.target.value }))}
+          onPaste={handleFormattedPaste('referenceBooksText')}
           placeholder={`1. Silberschatz, Korth, and Sudarshan, "Database System Concepts", 7th Edition, McGraw-Hill.
 2. Elmasri and Navathe, "Fundamentals of Database Systems", 7th Edition, Pearson.
 3. Ramakrishnan and Gehrke, "Database Management Systems", 3rd Edition, McGraw-Hill.`}

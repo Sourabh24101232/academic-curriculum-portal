@@ -75,14 +75,14 @@ const mockAuthValue = {
     'AddSubjectPage must have trigger button for bulk modal'
   );
 
-  // Verify positioning: Reference Books appears before Bulk Import in the HTML
-  const refIndex = addPageHtml.indexOf('Reference Books');
+  // Verify positioning: Text and Reference appears before Bulk Import in the HTML
+  const refIndex = addPageHtml.indexOf('Text and Reference');
   const bulkIndex = addPageHtml.indexOf('Bulk Curriculum Import (Excel)');
   assert(
     refIndex !== -1 && bulkIndex !== -1 && refIndex < bulkIndex,
-    'Excel Bulk Upload section must be positioned directly below Reference Books'
+    'Excel Bulk Upload section must be positioned directly below Text and Reference'
   );
-  console.log('✔ Test 3: AddSubjectPage renders Bulk Upload card directly below Reference Books.');
+  console.log('✔ Test 3: AddSubjectPage renders Bulk Upload card directly below Text and Reference.');
 }
 
 // 4. BulkUploadPage standalone route verification

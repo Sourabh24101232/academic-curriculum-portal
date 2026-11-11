@@ -97,7 +97,7 @@ const mockCourseData = {
   assert(normalHtml.includes('Total Credits (C)'), 'SubjectForm must render Credits credit box');
   assert(normalHtml.includes('Course Objectives'), 'SubjectForm must render Course Objectives textarea');
   assert(normalHtml.includes('Module-Wise Syllabus Text'), 'SubjectForm must render Syllabus textarea');
-  assert(normalHtml.includes('Reference Books &amp; Bibliography') || normalHtml.includes('Reference Books'), 'SubjectForm must render Reference Books textarea');
+  assert(normalHtml.includes('Text and Reference'), 'SubjectForm must render Text and Reference textarea');
   assert(normalHtml.includes('Official Course Syllabus PDF Document'), 'SubjectForm must render PDF file picker');
   assert(normalHtml.includes('Update Syllabus'), 'SubjectForm in edit mode must render "Update Syllabus" button');
   assert(!normalHtml.includes('Official PDF Outdated Warning'), 'Normal form must NOT display outdated-pdf warning');
