@@ -13,7 +13,8 @@ import {
   Layers,
   AlertCircle,
   Loader2,
-  BookmarkCheck
+  BookmarkCheck,
+  Home
 } from 'lucide-react';
 
 /**
@@ -29,7 +30,7 @@ export const formatMetadataLine = (course) => {
   const p = course.creditsBreakdown?.practical ?? course.practical ?? 0;
   const c = course.creditsBreakdown?.totalCredits ?? course.credits ?? 0;
 
-  return `Batch: ${batch} | Semester: ${semester} | L ${l}  T ${t}  P ${p}  C ${c}`;
+  return `Batch: ${batch} | Semester: ${semester} | L:${l}\u00A0\u00A0\u00A0T:${t}\u00A0\u00A0\u00A0P:${p}\u00A0\u00A0\u00A0C:${c}`;
 };
 
 /**
@@ -161,7 +162,7 @@ const CourseDetailsPage = () => {
             </h1>
 
             {/* Metadata Line */}
-            <p className="text-xs sm:text-sm text-slate-600 font-medium tracking-wide">
+            <p className="text-xs sm:text-sm text-slate-600 font-medium tracking-wide whitespace-pre-wrap">
               {metadataLine}
             </p>
           </div>
@@ -200,9 +201,10 @@ const CourseDetailsPage = () => {
         </div>
       )}
 
-      {/* 4. Complete Syllabus — Module-Wise Table */}
+      {/* 4. Complete Syllabus — Module-Wise */}
       <ModuleTable
         modules={course.modules || []}
+        syllabusText={course.syllabusText}
         totalHours={course.totalHours}
       />
 
@@ -215,13 +217,23 @@ const CourseDetailsPage = () => {
               Reference Books
             </h2>
           </div>
-          <ol className="list-decimal list-inside space-y-2 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal">
-            {course.referenceBooks.map((book, idx) => (
-              <li key={idx} className="pl-1">
-                <span className="text-slate-800">{book.replace(/^\d+[\.\)]\s*/, '')}</span>
-              </li>
-            ))}
-          </ol>
+          <div className="space-y-1.5 text-xs sm:text-sm text-slate-800 leading-relaxed font-normal">
+            {course.referenceBooks.map((book, idx) => {
+              const isSectionHeader = /^(text|reference|reference books?|text books?):?$/i.test(book.trim());
+              return (
+                <p
+                  key={idx}
+                  className={
+                    isSectionHeader
+                      ? 'font-bold text-slate-900 pt-2 first:pt-0'
+                      : 'text-slate-700'
+                  }
+                >
+                  {book}
+                </p>
+              );
+            })}
+          </div>
         </div>
       )}
 

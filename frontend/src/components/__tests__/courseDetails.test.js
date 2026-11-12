@@ -67,8 +67,8 @@ const mockCourseWithoutPdf = {
 // 1. formatMetadataLine Helper Verification
 {
   const line = formatMetadataLine(mockCourseWithPdf);
-  assert.strictEqual(line, 'Batch: 2024 - 2028 | Semester: 5 | L 3  T 0  P 0  C 3');
-  console.log('✓ formatMetadataLine: Correctly formats "Batch: ... | Semester: ... | L ...  T ...  P ...  C ..." line');
+  assert.strictEqual(line, 'Batch: 2024 - 2028 | Semester: 5 | L:3\u00A0\u00A0\u00A0T:0\u00A0\u00A0\u00A0P:0\u00A0\u00A0\u00A0C:3');
+  console.log('✓ formatMetadataLine: Correctly formats "Batch: ... | Semester: ... | L:3   T:0   P:0   C:3" line');
 }
 
 // 2. ModuleTable Component Verification
@@ -80,27 +80,21 @@ const mockCourseWithoutPdf = {
     })
   );
 
-  // Table headers
-  assert(html.includes('Module'), 'ModuleTable must contain Module header');
-  assert(html.includes('Topics Covered'), 'ModuleTable must contain Topics Covered header');
-  assert(html.includes('No. of Hours'), 'ModuleTable must contain No. of Hours header');
+  // Section title & no 3-column table headers
+  assert(html.includes('Complete Syllabus'), 'ModuleTable must contain Complete Syllabus title');
+  assert(!html.includes('Topics Covered'), 'ModuleTable must NOT contain Topics Covered column header');
+  assert(!html.includes('No. of Hours'), 'ModuleTable must NOT contain No. of Hours column header');
 
-  // Module rows
+  // Module items rendered with spacing
   assert(html.includes('Module 1'), 'Must render Module 1');
   assert(html.includes('Module 2'), 'Must render Module 2');
   assert(html.includes('Module 3'), 'Must render Module 3');
 
-  // Topics and hours
+  // Topics text
   assert(html.includes('DBMS Architecture'), 'Must render Module 1 topics');
   assert(html.includes('Normalization'), 'Must render Module 2 topics');
-  assert(html.includes('8 Hours'), 'Must render 8 Hours for Module 1');
-  assert(html.includes('10 Hours'), 'Must render 10 Hours for Module 2');
 
-  // Total Hours footer
-  assert(html.includes('Total Instructional Contact Hours:'), 'Must render total hours footer');
-  assert(html.includes('30 Hours'), 'Must display total contact hours');
-
-  console.log('✓ ModuleTable: Successfully renders headers, alternating module rows, topics, and hours summary');
+  console.log('✓ ModuleTable: Successfully renders module text with 1-line spacing without 3-column table headers');
 }
 
 // 3. Conditional "Download Syllabus (PDF)" Button Verification
@@ -157,7 +151,8 @@ const mockCourseWithoutPdf = {
   assert(withPdfHtml.includes('Download Syllabus (PDF)'), 'Download button MUST be present when hasOfficialPdf === true');
   assert(withPdfHtml.includes('bg-institute-gold'), 'Download button must use gold styling');
   assert(withPdfHtml.includes('← Back to Curriculum Page'), 'Back button must be present');
-  assert(withPdfHtml.includes('Batch: 2024 - 2028 | Semester: 5 | L 3  T 0  P 0  C 3'), 'Metadata line must match');
+  assert(withPdfHtml.includes('L:3'), 'Metadata line must include L:3');
+  assert(withPdfHtml.includes('C:3'), 'Metadata line must include C:3');
   assert(withPdfHtml.includes('Course Objectives'), 'Course objectives section must be present');
   assert(withPdfHtml.includes('Database System Concepts'), 'Reference books must be listed');
 

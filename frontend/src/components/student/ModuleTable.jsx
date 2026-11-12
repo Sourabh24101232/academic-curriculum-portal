@@ -1,28 +1,84 @@
 import React from 'react';
-import { Clock, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
+
+/**
+ * Splits raw syllabus text into distinct module blocks,
+ * ensuring clean separation even if the teacher did not add blank lines between them.
+ */
+export const splitSyllabusIntoModules = (syllabusText, modules = []) => {
+  if (syllabusText && typeof syllabusText === 'string' && syllabusText.trim()) {
+    const normalized = syllabusText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+    // Split on boundaries starting with 'Module <number/roman>'
+    const regex = /(?:^|\n)(?=\s*Module\s+(?:\d+|[IVXLCDM]+)\b)/gi;
+    const parts = normalized.split(regex).map((p) => p.trim()).filter(Boolean);
+    if (parts.length > 1) {
+      return parts;
+    }
+    // If no 'Module' keyword detected, split by double newlines or single newlines
+    const byBlank = normalized.split(/\n\s*\n+/).map((p) => p.trim()).filter(Boolean);
+    if (byBlank.length > 0) {
+      return byBlank;
+    }
+    return [normalized];
+  }
+
+  // Fallback if syllabusText is not provided, reconstruct from modules prop
+  if (Array.isArray(modules) && modules.length > 0) {
+    return modules.map((m, idx) => {
+      const heading = m.title || `Module ${m.moduleNumber || idx + 1}`;
+      const body = m.topics || '';
+      if (!body) return heading;
+      if (body.startsWith(heading)) return body;
+      return `${heading}: ${body}`;
+    });
+  }
+
+  return [];
+};
+
+/**
+ * Separates module heading (for bolding) from module description text,
+ * matching institutional syllabus formatting.
+ */
+export const parseModuleItem = (rawText) => {
+  if (!rawText) return { title: '', body: '' };
+
+  // Case 1: "Module 01: Introduction to Computing: Historical perspective..."
+  const matchTwoColons = rawText.match(/^(Module\s+[0-9A-Za-z]+[\s:-]+[^:\n]+:)\s*([\s\S]*)$/i);
+  if (matchTwoColons) {
+    return {
+      title: matchTwoColons[1].trim(),
+      body: matchTwoColons[2].trim()
+    };
+  }
+
+  // Case 2: "Module 1: Linear Data structures..." or "Module 1 - Description..."
+  const matchOneColon = rawText.match(/^(Module\s+[0-9A-Za-z]+[\s:-]*)\s*([\s\S]*)$/i);
+  if (matchOneColon) {
+    return {
+      title: matchOneColon[1].trim(),
+      body: matchOneColon[2].trim()
+    };
+  }
+
+  return {
+    title: '',
+    body: rawText.trim()
+  };
+};
 
 /**
  * ModuleTable Component
- * Detailed module-by-module course syllabus breakdown table.
- *
- * Enforces institutional specifications:
- * - Columns: Module, Topics Covered, No. of Hours.
- * - Alternating row styling with clean horizontal borders.
- * - Instructional hours summary footer.
+ * Displays complete course syllabus module-by-module without a 3-column table.
+ * Preserves authentic text with a 1-line space between each module and its description.
  *
  * @param {Object} props
- * @param {Array<{moduleNumber: number, topics: string, hours: number}>} props.modules - List of parsed syllabus modules
- * @param {number} [props.totalHours] - Optional total course instructional contact hours
+ * @param {Array} [props.modules] - Structured module array fallback
+ * @param {string} [props.syllabusText] - Raw multiline syllabus text
  */
-const ModuleTable = ({ modules = [], totalHours }) => {
-  const hasModules = modules && modules.length > 0;
-
-  const calculatedTotalHours =
-    typeof totalHours === 'number' && totalHours > 0
-      ? totalHours
-      : hasModules
-      ? modules.reduce((sum, m) => sum + (Number(m.hours) || 0), 0)
-      : 0;
+const ModuleTable = ({ modules = [], syllabusText }) => {
+  const rawBlocks = splitSyllabusIntoModules(syllabusText, modules);
+  const hasModules = rawBlocks && rawBlocks.length > 0;
 
   return (
     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden mb-6">
@@ -31,86 +87,30 @@ const ModuleTable = ({ modules = [], totalHours }) => {
       <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BookOpen className="w-4 h-4 text-[#1e40af]" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1e40af]">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#1e40af]">
             Complete Syllabus — Module-wise
-          </h3>
+          </h2>
         </div>
-        {calculatedTotalHours > 0 && (
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded shadow-xs">
-            <Clock className="w-3.5 h-3.5 text-[#1e40af]" />
-            <span>{calculatedTotalHours} Total Hours</span>
-          </div>
-        )}
       </div>
 
-      {/* Module Data Table */}
+      {/* Module Content Area - No 3 columns, clean spacing between modules */}
       {hasModules ? (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#eef4fb] text-[#1e40af] text-xs font-bold tracking-wider uppercase border-b border-slate-200">
-                <th scope="col" className="py-3 px-4 sm:px-6 w-32 whitespace-nowrap">
-                  Module
-                </th>
-                <th scope="col" className="py-3 px-4 sm:px-6">
-                  Topics Covered
-                </th>
-                <th scope="col" className="py-3 px-4 sm:px-6 w-36 whitespace-nowrap text-right">
-                  No. of Hours
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 text-xs text-slate-800">
-              {modules.map((mod, idx) => {
-                const isEven = idx % 2 === 0;
-
-                return (
-                  <tr
-                    key={mod.moduleNumber || idx}
-                    className={`transition-colors duration-100 ${
-                      isEven ? 'bg-white' : 'bg-slate-50/60'
-                    } hover:bg-amber-50/40`}
-                  >
-                    {/* Column 1: Module Number */}
-                    <td className="py-4 px-4 sm:px-6 font-bold text-institute-navy align-top whitespace-nowrap">
-                      <span className="inline-block px-2.5 py-1 rounded bg-institute-surface border border-slate-200 font-semibold">
-                        {`Module ${mod.moduleNumber || idx + 1}`}
-                      </span>
-                    </td>
-
-                    {/* Column 2: Topics Covered */}
-                    <td className="py-4 px-4 sm:px-6 text-slate-700 leading-relaxed font-normal align-top">
-                      <p className="whitespace-pre-line text-xs sm:text-sm">
-                        {mod.topics}
-                      </p>
-                    </td>
-
-                    {/* Column 3: Number of Hours */}
-                    <td className="py-4 px-4 sm:px-6 font-semibold text-slate-900 align-top text-right whitespace-nowrap">
-                      <span className="inline-flex items-center gap-1 text-slate-700">
-                        <Clock className="w-3 h-3 text-slate-400" />
-                        <span>{`${mod.hours} ${mod.hours === 1 ? 'Hour' : 'Hours'}`}</span>
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-
-            {/* Total Hours Footer Row */}
-            {calculatedTotalHours > 0 && (
-              <tfoot>
-                <tr className="bg-slate-100 font-bold text-xs text-institute-navy border-t-2 border-slate-300">
-                  <td colSpan={2} className="py-3 px-4 sm:px-6 text-right uppercase tracking-wider">
-                    Total Instructional Contact Hours:
-                  </td>
-                  <td className="py-3 px-4 sm:px-6 text-right whitespace-nowrap text-institute-navyDark">
-                    {`${calculatedTotalHours} Hours`}
-                  </td>
-                </tr>
-              </tfoot>
-            )}
-          </table>
+        <div className="p-5 sm:p-6 space-y-4">
+          {rawBlocks.map((block, idx) => {
+            const { title, body } = parseModuleItem(block);
+            return (
+              <div key={idx} className="text-xs sm:text-sm text-slate-800 leading-relaxed font-normal">
+                {title ? (
+                  <>
+                    <strong className="font-bold text-slate-900 mr-1.5">{title}</strong>
+                    <span className="text-slate-700">{body}</span>
+                  </>
+                ) : (
+                  <span className="text-slate-700">{body}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       ) : (
         <div className="p-8 text-center text-xs text-slate-500">
