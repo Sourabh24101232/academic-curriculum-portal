@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import FilterBar from '../../components/student/FilterBar';
 import CurriculumTable from '../../components/student/CurriculumTable';
@@ -117,16 +117,31 @@ const CurriculumPage = () => {
     }
   };
 
+  // Deduplicate courses by courseCode so courses shared across branches only appear once
+  const uniqueCourses = useMemo(() => {
+    if (!courses || courses.length === 0) return [];
+    const map = new Map();
+    for (const c of courses) {
+      const code = (c.courseCode || c.id || '').trim().toUpperCase();
+      if (!map.has(code)) {
+        map.set(code, c);
+      } else if (!map.get(code).hasOfficialPdf && c.hasOfficialPdf) {
+        map.set(code, c);
+      }
+    }
+    return Array.from(map.values());
+  }, [courses]);
+
   // 4. Handle Syllabus Download Action (One-by-one automatic downloads, no ZIP)
   const handleDownloadAll = async () => {
-    if (!courses || courses.length === 0) return;
+    if (!uniqueCourses || uniqueCourses.length === 0) return;
 
     setIsDownloading(true);
     setDownloadNotice('');
 
     try {
       // Find courses that have official PDFs available
-      const downloadableCourses = courses.filter((c) => c.hasOfficialPdf);
+      const downloadableCourses = uniqueCourses.filter((c) => c.hasOfficialPdf);
 
       if (downloadableCourses.length === 0) {
         setDownloadNotice(
@@ -291,7 +306,7 @@ const CurriculumPage = () => {
       ) : (
         /* Render Curriculum Table when Programme is Selected */
         <CurriculumTable
-          courses={courses}
+          courses={uniqueCourses}
           filters={filters}
           onDownloadAll={handleDownloadAll}
           onDownloadZip={handleDownloadAll}

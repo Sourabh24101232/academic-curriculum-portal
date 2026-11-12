@@ -44,7 +44,23 @@ const CurriculumTable = ({
   const handleDownload = onDownloadAll || onDownloadZip;
   const downloading = isDownloading || isDownloadingZip;
   const summaryLine = formatSummaryLine(filters);
-  const hasCourses = courses && courses.length > 0;
+
+  // Deduplicate courses by courseCode so courses shared across multiple branches appear only once
+  const uniqueCourses = React.useMemo(() => {
+    if (!courses || courses.length === 0) return [];
+    const map = new Map();
+    for (const c of courses) {
+      const code = (c.courseCode || c.id || '').trim().toUpperCase();
+      if (!map.has(code)) {
+        map.set(code, c);
+      } else if (!map.get(code).hasOfficialPdf && c.hasOfficialPdf) {
+        map.set(code, c);
+      }
+    }
+    return Array.from(map.values());
+  }, [courses]);
+
+  const hasCourses = uniqueCourses && uniqueCourses.length > 0;
 
   return (
     <div className="space-y-4 mb-8">
@@ -96,7 +112,7 @@ const CurriculumTable = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs sm:text-sm text-slate-800">
-                {courses.map((course, idx) => {
+                {uniqueCourses.map((course, idx) => {
                   const isElective = Boolean(
                     course.isElective || course.courseType === 'ELECTIVE'
                   );
