@@ -1004,14 +1004,17 @@ Module 5: Indexing Structures, B-Trees, and Query Optimization`}
         </label>
         <textarea
           id="reference-books"
-          rows={4}
+          rows={6}
           required
           value={formData.referenceBooksText}
           onChange={(e) => setFormData((prev) => ({ ...prev, referenceBooksText: e.target.value }))}
           onPaste={handleFormattedPaste('referenceBooksText')}
-          placeholder={`1. Silberschatz, Korth, and Sudarshan, "Database System Concepts", 7th Edition, McGraw-Hill.
-2. Elmasri and Navathe, "Fundamentals of Database Systems", 7th Edition, Pearson.
-3. Ramakrishnan and Gehrke, "Database Management Systems", 3rd Edition, McGraw-Hill.`}
+          placeholder={`Text:
+1. M. Morris Mano, Digital Logic and Computer Design, Pearson Education, 11th edition, 2009.
+2. R.P. Jain, Modern Digital Electronics, Tata McGraw Hill,3rd edition, 2011.
+
+Reference:
+1. R.J. Tocci, N.S. Wisdmer and G.L. Moss, Digital Systems: Principle and Applications, Pearson Education, 10th edition, 2011`}
           className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
         />
       </div>
