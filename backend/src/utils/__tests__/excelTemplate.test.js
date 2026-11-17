@@ -82,7 +82,11 @@ async function main() {
       assert.strictEqual(Number(sampleRow[10]), 3);
       assert.ok(sampleRow[11].length > 0, 'Course objectives must be present');
       assert.ok(sampleRow[12].includes('Module 1:'), 'Module-wise syllabus must contain sample modules');
-      assert.ok(sampleRow[13].includes('Silberschatz'), 'Reference books must contain sample textbooks');
+      assert.ok(!/\(\d+\)/.test(sampleRow[12]), 'Module-wise syllabus must not contain hours in parentheses');
+      assert.ok(
+        sampleRow[13].includes('Morris Mano') || sampleRow[13].includes('Text:'),
+        'Reference books must contain sample textbooks and reference sections'
+      );
     });
 
     // 3. Unit Test: Sheet 2 has clear instructions and constraint explanations

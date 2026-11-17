@@ -77,8 +77,8 @@ export const generateCourseTemplateBuffer = () => {
     0,
     3,
     'To provide fundamental concepts of databases, relational database design, query optimization, transaction processing, and concurrency control.',
-    'Module 1: Introduction to DBMS and Relational Models (6)\nModule 2: SQL and Query Optimization (8)\nModule 3: Transactions and Concurrency Control (10)',
-    '1. Silberschatz - Database System Concepts\n2. Elmasri - Fundamentals of Database Systems'
+    'Module 1: Introduction to DBMS Architecture and Data Modeling\nModule 2: Relational Model, ER-Diagrams, and Relational Algebra\nModule 3: Structured Query Language (SQL) and Normalization\nModule 4: Transaction Processing, Concurrency Control, and Recovery\nModule 5: Indexing Structures, B-Trees, and Query Optimization',
+    'Text:\n1. M. Morris Mano, Digital Logic and Computer Design, Pearson Education, 11th edition, 2009.\n2. R.P. Jain, Modern Digital Electronics, Tata McGraw Hill,3rd edition, 2011.\n\nReference:\n1. R.J. Tocci, N.S. Wisdmer and G.L. Moss, Digital Systems: Principle and Applications, Pearson Education, 10th edition, 2011'
   ];
 
   const wsTemplate = XLSX.utils.aoa_to_sheet([headers, sampleRow]);
@@ -98,7 +98,7 @@ export const generateCourseTemplateBuffer = () => {
     { wch: 10 }, // credits
     { wch: 45 }, // course_objectives
     { wch: 65 }, // module_wise_syllabus
-    { wch: 45 }  // reference_books
+    { wch: 65 }  // reference_books
   ];
 
   XLSX.utils.book_append_sheet(wb, wsTemplate, 'Syllabus Import Template');
@@ -120,12 +120,12 @@ export const generateCourseTemplateBuffer = () => {
     ['practical', 'Yes', 'Non-negative integer (e.g. 0, 2)', 'Weekly practical/lab hours (P). Must be an integer >= 0.'],
     ['credits', 'Yes', 'Non-negative integer (e.g. 3, 4)', 'Total course credits (C). Must be an integer >= 0.'],
     ['course_objectives', 'Yes', 'Text', 'Primary educational objectives and course outcomes.'],
-    ['module_wise_syllabus', 'Yes', 'Strict Format: Module <N>: <Topics> (<Hours>)', 'Strict sequential numbering (Module 1, Module 2, ...) with positive integer hours in parentheses on separate lines.'],
-    ['reference_books', 'Yes', 'Text / List', 'Standard textbooks and references for the course.'],
+    ['module_wise_syllabus', 'Yes', 'Format: Module <N>: <Topic List>', 'Strict sequential numbering (Module 1, Module 2, ...) on separate lines.'],
+    ['reference_books', 'Yes', 'Text and Reference (e.g. Text: ... Reference: ...)', 'Standard textbooks and references organized into Text: and Reference: sections.'],
     [],
     ['Key Rules & Constraints:'],
     ['1. Multi-Branch & Multi-Semester Support: Specify comma-separated branches and/or semesters in a single row to create offerings across all combinations.'],
-    ['2. Strict Module Parsing: The module_wise_syllabus column must follow "Module <N>: Topics Covered (Hours)" exactly.'],
+    ['2. Strict Module Parsing: The module_wise_syllabus column must follow "Module <N>: <Topic List>" exactly.'],
     ['3. Sequential Module Numbers: Module numbering must begin at 1 and increment sequentially without duplicates or gaps.'],
     ['4. Non-Negative Credit Hours: lecture, tutorial, practical, and credits must all be valid non-negative integers.'],
     ['5. Unique Offering Key: Each subject is uniquely matched by (course_code + programme + batch) to prevent duplicate syllabus uploads.']

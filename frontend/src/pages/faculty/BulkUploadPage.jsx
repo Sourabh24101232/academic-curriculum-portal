@@ -79,7 +79,7 @@ const BulkUploadPage = () => {
               <li><strong>Programme, Batch, Branch, Sem:</strong> Strict academic hierarchy matching IIITBH constants. Use comma-separated values for multiple branches/semesters (e.g. <code>CSE, ECE</code>).</li>
               <li><strong>L, T, P, Credits:</strong> Non-negative whole integers only (0, 1, 2, 3...).</li>
               <li><strong>Course Objectives:</strong> Clear educational aims.</li>
-              <li><strong>Reference Books:</strong> Standard numbered bibliography.</li>
+              <li><strong>Reference Books:</strong> Standard textbooks and references (Text: and Reference:).</li>
             </ul>
           </div>
 
@@ -89,10 +89,10 @@ const BulkUploadPage = () => {
               Strict Module-Wise Syllabus Rules
             </h3>
             <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
-              <li>Must follow: <code>Module &lt;N&gt;: &lt;Topics&gt; (&lt;Hours&gt;)</code></li>
+              <li>Must follow: <code>Module &lt;N&gt;: &lt;Topic List&gt;</code></li>
               <li>Sequential numbering: Module 1, Module 2, Module 3...</li>
-              <li>Positive integer lecture hours in parentheses.</li>
-              <li>Zero tolerance for skipping modules or missing hours.</li>
+              <li>Syllabus topics listed per module without hours.</li>
+              <li>Zero tolerance for skipping or misordering modules.</li>
             </ul>
           </div>
         </div>
