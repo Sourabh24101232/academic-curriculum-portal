@@ -121,9 +121,6 @@ const mockCourseWithoutPdf = {
           { href: `/api/courses/${courseData.id}/pdf`, className: 'bg-institute-gold' },
           'Download Syllabus (PDF)'
         ),
-      // Objectives
-      React.createElement('h2', null, 'Course Objectives'),
-      React.createElement('p', null, courseData.courseObjectives),
       // Module Table
       React.createElement(ModuleTable, {
         modules: courseData.modules,
@@ -153,7 +150,7 @@ const mockCourseWithoutPdf = {
   assert(withPdfHtml.includes('← Back to Curriculum Page'), 'Back button must be present');
   assert(withPdfHtml.includes('L:3'), 'Metadata line must include L:3');
   assert(withPdfHtml.includes('C:3'), 'Metadata line must include C:3');
-  assert(withPdfHtml.includes('Course Objectives'), 'Course objectives section must be present');
+  assert(!withPdfHtml.includes('Course Objectives'), 'Course objectives section must NOT be present');
   assert(withPdfHtml.includes('Database System Concepts'), 'Reference books must be listed');
 
   // Test 3b: Course WITHOUT official PDF

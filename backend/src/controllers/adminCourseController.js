@@ -76,7 +76,7 @@ export const createCourse = async (req, res, next) => {
               tutorial,
               practical,
               credits,
-              courseObjectives,
+              courseObjectives: courseObjectives ? courseObjectives.trim() : '',
               moduleWiseSyllabusText,
               referenceBooksText
             }
@@ -315,7 +315,7 @@ export const updateCourse = async (req, res, next) => {
         tutorial,
         practical,
         credits,
-        courseObjectives,
+        courseObjectives: courseObjectives !== undefined ? (courseObjectives ? courseObjectives.trim() : '') : (existingCourse.courseObjectives || ''),
         moduleWiseSyllabusText,
         referenceBooksText
       }

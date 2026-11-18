@@ -14,7 +14,7 @@ The **Curriculum & Syllabus Portal** provides a single source of truth for all a
 1. **Public Student Portal**
    - **Programme-First Browsing**: Students select their academic programme (`BTech`, `MTech`, `PhD`) to unlock filtered views.
    - **Multi-Parametric Filtering**: Reactive filters for Course,Batch, Branch, and Semester (individual semesters or "All Semesters"). 
-   - **Structured Course Information**: Displays Course Code, Course Name, Core/Elective indicators (electives marked with `*`), L/T/P/C breakdown, Course Objectives, sequential Module-Wise Syllabus tables, and Reference Books.
+   - **Structured Course Information**: Displays Course Code, Course Name, Core/Elective indicators (electives marked with `*`), L/T/P/C breakdown, sequential Module-Wise Syllabus tables, and Reference Books.
    - **Document Downloads**:
      - Single Course PDF download (original authentic PDF uploaded by faculty).
      - Filtered "Download All Syllabi" ZIP archive generator with status reporting for unavailable documents.

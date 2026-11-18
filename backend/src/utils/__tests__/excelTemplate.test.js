@@ -41,8 +41,8 @@ async function main() {
       );
     });
 
-    // 2. Unit Test: Sheet 1 has exact required 14 header columns and valid sample row
-    await runTest('Sheet 1 has exact 14 columns matching schema and valid sample row', async () => {
+    // 2. Unit Test: Sheet 1 has exact required 13 header columns and valid sample row
+    await runTest('Sheet 1 has exact 13 columns matching schema and valid sample row', async () => {
       const buffer = generateCourseTemplateBuffer();
       const workbook = XLSX.read(buffer, { type: 'buffer' });
       const ws = workbook.Sheets['Syllabus Import Template'];
@@ -62,11 +62,10 @@ async function main() {
         'tutorial',
         'practical',
         'credits',
-        'course_objectives',
         'module_wise_syllabus',
         'reference_books'
       ];
-      assert.deepStrictEqual(rows[0], expectedHeaders, 'Header row must match exact 14 specification columns');
+      assert.deepStrictEqual(rows[0], expectedHeaders, 'Header row must match exact 13 specification columns');
 
       const sampleRow = rows[1];
       assert.strictEqual(sampleRow[0], 'CS305');
@@ -80,11 +79,10 @@ async function main() {
       assert.strictEqual(Number(sampleRow[8]), 0);
       assert.strictEqual(Number(sampleRow[9]), 0);
       assert.strictEqual(Number(sampleRow[10]), 3);
-      assert.ok(sampleRow[11].length > 0, 'Course objectives must be present');
-      assert.ok(sampleRow[12].includes('Module 1:'), 'Module-wise syllabus must contain sample modules');
-      assert.ok(!/\(\d+\)/.test(sampleRow[12]), 'Module-wise syllabus must not contain hours in parentheses');
+      assert.ok(sampleRow[11].includes('Module 1:'), 'Module-wise syllabus must contain sample modules');
+      assert.ok(!/\(\d+\)/.test(sampleRow[11]), 'Module-wise syllabus must not contain hours in parentheses');
       assert.ok(
-        sampleRow[13].includes('Morris Mano') || sampleRow[13].includes('Text:'),
+        sampleRow[12].includes('Morris Mano') || sampleRow[12].includes('Text:'),
         'Reference books must contain sample textbooks and reference sections'
       );
     });

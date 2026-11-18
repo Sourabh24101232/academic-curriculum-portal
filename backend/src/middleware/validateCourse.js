@@ -114,10 +114,6 @@ export const validateCoursePayload = (req, res, next) => {
     errors.push(`Field 'courseType' is invalid. Must be one of: ${validCourseTypes.join(', ')}.`);
   }
 
-  if (!courseObjectives || typeof courseObjectives !== 'string' || courseObjectives.trim() === '') {
-    errors.push("Field 'courseObjectives' is required and must be a non-empty string.");
-  }
-
   if (!referenceBooksText || typeof referenceBooksText !== 'string' || referenceBooksText.trim() === '') {
     errors.push("Field 'referenceBooksText' is required and must be a non-empty string.");
   }
@@ -151,7 +147,7 @@ export const validateCoursePayload = (req, res, next) => {
   req.body.branch = parsedBranches.values[0];
   req.body.semesters = parsedSemesters.values;
   req.body.semester = parsedSemesters.values[0];
-  req.body.courseObjectives = courseObjectives.trim();
+  req.body.courseObjectives = (courseObjectives && typeof courseObjectives === 'string') ? courseObjectives.trim() : '';
   req.body.moduleWiseSyllabusText = moduleWiseSyllabusText.trim();
   req.body.referenceBooksText = referenceBooksText.trim();
   req.body.lecture = parseInt(req.body.lecture, 10);

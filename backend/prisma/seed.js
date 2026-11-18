@@ -42,8 +42,7 @@ async function main() {
       tutorial: 0,
       practical: 0,
       credits: 3,
-      courseObjectives:
-        'To understand the fundamental concepts of database management systems, relational data models, SQL querying, transaction management, and relational database design principles.',
+      courseObjectives: '',
       moduleWiseSyllabusText:
         'Module 1: Overview of DBMS\nHistorical development, data models, database languages, architecture, data independence, schema and instances.\n\nModule 2: Relational model\nRelational algebra, tuple calculus, constraints, normalization (1NF, 2NF, 3NF, BCNF), ER model.\n\nModule 3: SQL basics\nDDL, DML, DCL, query formulation, subqueries, joins, query optimization, query processing and evaluation.\n\nModule 4: Transactions\nACID properties, concurrency control, serializability, locking protocols, crash recovery.\n\nModule 5: Storage Structures and Indexing\nStorage hierarchy, indexing and hashing, B-trees, B+ trees, query execution plans.',
       referenceBooksText:
@@ -61,8 +60,7 @@ async function main() {
       tutorial: 1,
       practical: 0,
       credits: 4,
-      courseObjectives:
-        'To develop rigorous mathematical and analytical understanding of designing efficient algorithms, asymptotic complexity analysis, graph algorithms, and NP-completeness.',
+      courseObjectives: '',
       moduleWiseSyllabusText:
         'Module 1: Algorithm Analysis and Asymptotic Notations\nOrder notation, asymptotic complexity, recurrence relations, master theorem.\n\nModule 2: Divide and Conquer, Greedy Algorithms\nDivide and conquer paradigms, greedy choice property, optimal substructure, Huffman codes.\n\nModule 3: Dynamic Programming\nPrinciple of optimality, memoization, matrix chain multiplication, longest common subsequence.\n\nModule 4: Graph Algorithms\nBreadth-first search, depth-first search, topological sort, minimum spanning trees, shortest paths.\n\nModule 5: NP-Completeness and Approximations\nP, NP, NP-complete, NP-hard classes, polynomial reductions, approximation algorithms.',
       referenceBooksText:

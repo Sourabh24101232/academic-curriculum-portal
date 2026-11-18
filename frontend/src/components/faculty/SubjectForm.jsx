@@ -407,7 +407,6 @@ const SubjectForm = ({
     tutorial: initialData.tutorial !== undefined ? String(initialData.tutorial) : '0',
     practical: initialData.practical !== undefined ? String(initialData.practical) : '0',
     credits: initialData.credits !== undefined ? String(initialData.credits) : '3',
-    courseObjectives: initialData.courseObjectives || '',
     moduleWiseSyllabusText: initialData.moduleWiseSyllabusText || '',
     referenceBooksText: initialData.referenceBooksText || ''
   });
@@ -443,7 +442,6 @@ const SubjectForm = ({
         tutorial: initialData.tutorial !== undefined ? String(initialData.tutorial) : '0',
         practical: initialData.practical !== undefined ? String(initialData.practical) : '0',
         credits: initialData.credits !== undefined ? String(initialData.credits) : '3',
-        courseObjectives: initialData.courseObjectives || '',
         moduleWiseSyllabusText: initialData.moduleWiseSyllabusText || '',
         referenceBooksText: initialData.referenceBooksText || ''
       });
@@ -605,11 +603,6 @@ const SubjectForm = ({
       return;
     }
 
-    if (!formData.courseObjectives.trim()) {
-      reportFormError('Course Objectives cannot be empty.');
-      return;
-    }
-
     if (!formData.referenceBooksText.trim()) {
       reportFormError('Reference Books cannot be empty.');
       return;
@@ -631,7 +624,7 @@ const SubjectForm = ({
         tutorial: parseInt(formData.tutorial, 10),
         practical: parseInt(formData.practical, 10),
         credits: parseInt(formData.credits, 10),
-        courseObjectives: formData.courseObjectives.trim(),
+        courseObjectives: '',
         moduleWiseSyllabusText: formData.moduleWiseSyllabusText.trim(),
         referenceBooksText: formData.referenceBooksText.trim()
       };
@@ -933,24 +926,7 @@ const SubjectForm = ({
         </div>
       </div>
 
-      {/* 3. Course Objectives */}
-      <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
-        <label htmlFor="course-objectives" className="block text-sm font-bold uppercase tracking-wider text-institute-navy">
-          Course Objectives <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          id="course-objectives"
-          rows={3}
-          required
-          value={formData.courseObjectives}
-          onChange={(e) => setFormData((prev) => ({ ...prev, courseObjectives: e.target.value }))}
-          onPaste={handleFormattedPaste('courseObjectives')}
-          placeholder="State the core educational aims and target learning outcomes of this course offering..."
-          className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-300 rounded-md p-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-institute-gold focus:border-institute-navy leading-relaxed"
-        />
-      </div>
-
-      {/* 4. Module-Wise Syllabus Text with Live Client-Side Syntax Checker */}
+      {/* 3. Module-Wise Syllabus Text with Live Client-Side Syntax Checker */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div>
@@ -997,7 +973,7 @@ Module 5: Indexing Structures, B-Trees, and Query Optimization`}
         />
       </div>
 
-      {/* 5. Text and Reference */}
+      {/* 4. Text and Reference */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
         <label htmlFor="reference-books" className="block text-sm font-bold uppercase tracking-wider text-institute-navy">
           Text and Reference <span className="text-red-500">*</span>
@@ -1061,7 +1037,7 @@ Reference:
         </div>
       )}
 
-      {/* 6. Official PDF File Upload Picker */}
+      {/* 5. Official PDF File Upload Picker */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 space-y-3">
         <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">

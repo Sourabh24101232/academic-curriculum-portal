@@ -142,7 +142,6 @@ test('validateCoursePayload middleware rejects decimal credits (lecture: 3.5)', 
       tutorial: 0,
       practical: 0,
       credits: 3,
-      courseObjectives: 'Learn DBMS',
       referenceBooksText: '1. Korth',
       moduleWiseSyllabusText: 'Module 1: Intro\nRelational models'
     }
@@ -171,7 +170,6 @@ test('validateCoursePayload middleware rejects negative credits (credits: -1)', 
       tutorial: 0,
       practical: 0,
       credits: -1,
-      courseObjectives: 'Learn DBMS',
       referenceBooksText: '1. Korth',
       moduleWiseSyllabusText: 'Module 1: Intro\nRelational models'
     }
@@ -200,7 +198,6 @@ test('validateCoursePayload middleware accepts valid single-box syllabus and nor
       tutorial: '0',
       practical: '0',
       credits: '3',
-      courseObjectives: 'Learn DBMS concepts',
       referenceBooksText: '1. Silberschatz',
       moduleWiseSyllabusText: 'Module 1: Overview of DBMS\nDatabase concepts\n\nModule 2: SQL and Normalization\nRelational calculus'
     }

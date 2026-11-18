@@ -59,7 +59,6 @@ export const generateCourseTemplateBuffer = () => {
     'tutorial',
     'practical',
     'credits',
-    'course_objectives',
     'module_wise_syllabus',
     'reference_books'
   ];
@@ -76,7 +75,6 @@ export const generateCourseTemplateBuffer = () => {
     0,
     0,
     3,
-    'To provide fundamental concepts of databases, relational database design, query optimization, transaction processing, and concurrency control.',
     'Module 1: Introduction to DBMS Architecture and Data Modeling\nModule 2: Relational Model, ER-Diagrams, and Relational Algebra\nModule 3: Structured Query Language (SQL) and Normalization\nModule 4: Transaction Processing, Concurrency Control, and Recovery\nModule 5: Indexing Structures, B-Trees, and Query Optimization',
     'Text:\n1. M. Morris Mano, Digital Logic and Computer Design, Pearson Education, 11th edition, 2009.\n2. R.P. Jain, Modern Digital Electronics, Tata McGraw Hill,3rd edition, 2011.\n\nReference:\n1. R.J. Tocci, N.S. Wisdmer and G.L. Moss, Digital Systems: Principle and Applications, Pearson Education, 10th edition, 2011'
   ];
@@ -96,7 +94,6 @@ export const generateCourseTemplateBuffer = () => {
     { wch: 10 }, // tutorial
     { wch: 10 }, // practical
     { wch: 10 }, // credits
-    { wch: 45 }, // course_objectives
     { wch: 65 }, // module_wise_syllabus
     { wch: 65 }  // reference_books
   ];
@@ -119,11 +116,10 @@ export const generateCourseTemplateBuffer = () => {
     ['tutorial', 'Yes', 'Non-negative integer (e.g. 0, 1)', 'Weekly tutorial hours (T). Must be an integer >= 0.'],
     ['practical', 'Yes', 'Non-negative integer (e.g. 0, 2)', 'Weekly practical/lab hours (P). Must be an integer >= 0.'],
     ['credits', 'Yes', 'Non-negative integer (e.g. 3, 4)', 'Total course credits (C). Must be an integer >= 0.'],
-    ['course_objectives', 'Yes', 'Text', 'Primary educational objectives and course outcomes.'],
     ['module_wise_syllabus', 'Yes', 'Format: Module <N>: <Topic List>', 'Strict sequential numbering (Module 1, Module 2, ...) on separate lines.'],
     ['reference_books', 'Yes', 'Text and Reference (e.g. Text: ... Reference: ...)', 'Standard textbooks and references organized into Text: and Reference: sections.'],
     [],
-    ['Key Rules & Constraints:'],
+    ['Key Rules & Constraints:'],,
     ['1. Multi-Branch & Multi-Semester Support: Specify comma-separated branches and/or semesters in a single row to create offerings across all combinations.'],
     ['2. Strict Module Parsing: The module_wise_syllabus column must follow "Module <N>: <Topic List>" exactly.'],
     ['3. Sequential Module Numbers: Module numbering must begin at 1 and increment sequentially without duplicates or gaps.'],
@@ -253,7 +249,6 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
     const tutorialRaw = getRawVal(['tutorial', 't']);
     const practicalRaw = getRawVal(['practical', 'p']);
     const creditsRaw = getRawVal(['credits', 'c', 'credit']);
-    const courseObjectives = getVal(['course_objectives', 'courseobjectives', 'objectives']);
     const moduleWiseSyllabusText = getVal([
       'module_wise_syllabus',
       'modulewisesyllabus',
@@ -316,9 +311,6 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
       }
     }
 
-    if (!courseObjectives) {
-      errors.push("Field 'course_objectives' is required.");
-    }
     if (!referenceBooksText) {
       errors.push("Field 'reference_books' is required.");
     }
@@ -401,7 +393,7 @@ export const parseAndValidateExcelBuffer = async (buffer) => {
       tutorial: isValidNonNegativeInteger(tutorialRaw) ? Number(tutorialRaw) : tutorialRaw,
       practical: isValidNonNegativeInteger(practicalRaw) ? Number(practicalRaw) : practicalRaw,
       credits: isValidNonNegativeInteger(creditsRaw) ? Number(creditsRaw) : creditsRaw,
-      courseObjectives,
+      courseObjectives: '',
       moduleWiseSyllabusText,
       referenceBooksText,
       status,

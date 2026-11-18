@@ -78,7 +78,6 @@ const BulkUploadPage = () => {
               <li><strong>Course Code &amp; Name:</strong> Mandatory course identifier (unique per Course Code + Programme + Batch).</li>
               <li><strong>Programme, Batch, Branch, Sem:</strong> Strict academic hierarchy matching IIITBH constants. Use comma-separated values for multiple branches/semesters (e.g. <code>CSE, ECE</code>).</li>
               <li><strong>L, T, P, Credits:</strong> Non-negative whole integers only (0, 1, 2, 3...).</li>
-              <li><strong>Course Objectives:</strong> Clear educational aims.</li>
               <li><strong>Reference Books:</strong> Standard textbooks and references (Text: and Reference:).</li>
             </ul>
           </div>

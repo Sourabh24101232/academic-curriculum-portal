@@ -95,7 +95,7 @@ const mockCourseData = {
   assert(normalHtml.includes('Tutorial (T)'), 'SubjectForm must render Tutorial credit box');
   assert(normalHtml.includes('Practical (P)'), 'SubjectForm must render Practical credit box');
   assert(normalHtml.includes('Total Credits (C)'), 'SubjectForm must render Credits credit box');
-  assert(normalHtml.includes('Course Objectives'), 'SubjectForm must render Course Objectives textarea');
+  assert(!normalHtml.includes('Course Objectives'), 'SubjectForm must NOT render Course Objectives textarea');
   assert(normalHtml.includes('Module-Wise Syllabus Text'), 'SubjectForm must render Syllabus textarea');
   assert(normalHtml.includes('Text and Reference'), 'SubjectForm must render Text and Reference textarea');
   assert(normalHtml.includes('Official Course Syllabus PDF Document'), 'SubjectForm must render PDF file picker');

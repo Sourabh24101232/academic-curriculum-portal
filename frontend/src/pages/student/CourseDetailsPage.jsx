@@ -13,7 +13,6 @@ import {
   Layers,
   AlertCircle,
   Loader2,
-  BookmarkCheck,
   Home
 } from 'lucide-react';
 
@@ -38,7 +37,6 @@ export const formatMetadataLine = (course) => {
  * Public student view displaying comprehensive course syllabus details:
  * - Breadcrumbs & top back navigation button (strictly below hero banner only)
  * - Course identity bar with metadata and conditional official PDF download
- * - Course objectives card
  * - Complete module-by-module breakdown table
  * - Reference books bibliography
  */
@@ -186,29 +184,14 @@ const CourseDetailsPage = () => {
         </div>
       </div>
 
-      {/* 3. Course Objectives Card */}
-      {course.courseObjectives && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5 sm:p-6">
-          <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
-            <BookmarkCheck className="w-4 h-4 text-[#1e40af]" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#1e40af]">
-              Course Objectives
-            </h2>
-          </div>
-          <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-line font-normal">
-            {course.courseObjectives}
-          </p>
-        </div>
-      )}
-
-      {/* 4. Complete Syllabus — Module-Wise */}
+      {/* 3. Complete Syllabus — Module-Wise */}
       <ModuleTable
         modules={course.modules || []}
         syllabusText={course.syllabusText}
         totalHours={course.totalHours}
       />
 
-      {/* 5. Reference Books Section */}
+      {/* 4. Reference Books Section */}
       {course.referenceBooks && course.referenceBooks.length > 0 && (
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-5 sm:p-6">
           <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">

@@ -47,7 +47,6 @@ const buildAcceptanceTestWorkbookBuffer = () => {
     'tutorial',
     'practical',
     'credits',
-    'course_objectives',
     'module_wise_syllabus',
     'reference_books'
   ];
@@ -64,7 +63,6 @@ const buildAcceptanceTestWorkbookBuffer = () => {
     0,
     0,
     3,
-    'Master advanced algorithm design techniques and complexity analysis.',
     'Module 1: Graph Algorithms and Network Flow (10)\nModule 2: Approximation Algorithms (8)',
     '1. Cormen, Leiserson, Rivest - Introduction to Algorithms'
   ];
@@ -81,7 +79,6 @@ const buildAcceptanceTestWorkbookBuffer = () => {
     0,
     0,
     3,
-    'Fundamental concepts of database design and relational models.',
     'Module 1: Relational Algebra (6)\nModule 2: Normalization and SQL (8)',
     '1. Silberschatz - Database System Concepts'
   ];
@@ -98,7 +95,6 @@ const buildAcceptanceTestWorkbookBuffer = () => {
     'zero', // Non-integer tutorial
     3.5, // Decimal practical
     -4, // Negative credits
-    '', // Missing objectives
     '', // Missing syllabus
     ''  // Missing reference books
   ];
