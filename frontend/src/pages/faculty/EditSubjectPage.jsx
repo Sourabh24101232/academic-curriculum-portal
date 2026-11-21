@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit3, Loader2, AlertCircle } from 'lucide-react';
+import { Edit3, Loader2, AlertCircle } from 'lucide-react';
 import { adminApi } from '../../services/api';
 import SubjectForm from '../../components/faculty/SubjectForm';
 import toast from 'react-hot-toast';
@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
  * Faculty interface for updating an existing course offering and syllabus.
  *
  * Strict Design Invariants:
- * - Rule 2: "Go to Prev Page" is placed BOTH below header AND above footer.
+ * - Navigation: Back navigation is provided by the FacultyLayout subheader bar ("Go to Prev Page").
  * - Outdated-PDF Warning Banner: Prominently displayed in amber/gold if syllabus text
  *   is modified without uploading a replacement PDF. Clears when authentic PDF is uploaded.
  * - STRICTLY NO SIDEBAR.
@@ -68,7 +68,7 @@ const EditSubjectPage = () => {
       // B. If a replacement PDF was provided, upload it to synchronize document
       if (pdfFile) {
         const formData = new FormData();
-        formData.append('pdf', pdfFile);
+        formData.append('pdfFile', pdfFile);
         await adminApi.uploadPdf(id, formData);
 
         // Clear outdated warning since replacement PDF is now synchronized
@@ -135,20 +135,8 @@ const EditSubjectPage = () => {
 
   return (
     <div className="space-y-6">
-      
-      {/* 1. TOP Navigation: "Go to Prev Page" placed below header */}
-      <div className="flex items-center justify-between py-2 border-b border-slate-200" data-testid="top-back-nav">
-        <button
-          type="button"
-          onClick={() => navigate('/faculty/courses')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-institute-navy px-3 py-1.5 rounded hover:bg-slate-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Go to Prev Page</span>
-        </button>
-      </div>
 
-      {/* 2. Page Header */}
+      {/* Page Header */}
       <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-institute-navy text-institute-gold rounded-lg shadow-sm">
@@ -171,7 +159,7 @@ const EditSubjectPage = () => {
         </div>
       </div>
 
-      {/* 3. Course Edit Form */}
+      {/* Course Edit Form */}
       <SubjectForm
         initialData={course}
         isEdit={true}
@@ -179,18 +167,6 @@ const EditSubjectPage = () => {
         isSubmitting={isSubmitting}
         outdatedPdfWarning={outdatedPdfWarning}
       />
-
-      {/* 4. BOTTOM Navigation: "Go to Prev Page" placed above footer (Strict Rule 2) */}
-      <div className="flex items-center justify-between pt-4 border-t border-slate-200" data-testid="bottom-back-nav">
-        <button
-          type="button"
-          onClick={() => navigate('/faculty/courses')}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-institute-navy px-3 py-1.5 rounded hover:bg-slate-100 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Go to Prev Page</span>
-        </button>
-      </div>
 
     </div>
   );

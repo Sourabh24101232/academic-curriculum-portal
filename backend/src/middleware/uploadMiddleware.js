@@ -22,7 +22,10 @@ const upload = multer({
   fileFilter
 });
 
-const multerSinglePdf = upload.single('pdfFile');
+const multerPdfUpload = upload.fields([
+  { name: 'pdfFile', maxCount: 1 },
+  { name: 'pdf', maxCount: 1 }
+]);
 
 /**
  * uploadPdfMiddleware
@@ -30,7 +33,7 @@ const multerSinglePdf = upload.single('pdfFile');
  * Blocks executables, scripts, or disguised text files.
  */
 export const uploadPdfMiddleware = (req, res, next) => {
-  multerSinglePdf(req, res, (err) => {
+  multerPdfUpload(req, res, (err) => {
     if (err) {
       if (err instanceof multer.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -41,6 +44,10 @@ export const uploadPdfMiddleware = (req, res, next) => {
         return next(new AppError(`Upload error: ${err.message}`, 400));
       }
       return next(err);
+    }
+
+    if (!req.file && req.files) {
+      req.file = req.files['pdfFile']?.[0] || req.files['pdf']?.[0];
     }
 
     if (!req.file) {
