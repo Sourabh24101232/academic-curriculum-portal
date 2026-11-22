@@ -99,8 +99,8 @@ const FacultyCourseTable = ({
                       <span className="font-semibold text-sm text-slate-900">
                         {course.courseCode}
                       </span>
-                      {course.isElective && (
-                        <span className="text-xs text-red-500 font-bold" title="Elective Course">
+                      {!course.hasOfficialPdf && (
+                        <span className="text-xs text-red-500 font-bold" title="PDF syllabus not uploaded">
                           *
                         </span>
                       )}
@@ -144,10 +144,10 @@ const FacultyCourseTable = ({
         </div>
       </div>
 
-      {/* Legend Below Table: * represents elective courses */}
+      {/* Legend Below Table: * represents PDF syllabus not uploaded */}
       <div className="text-right text-xs text-slate-600 pr-2">
         <span className="text-red-600 font-bold mr-1">*</span>
-        <span>represents elective courses</span>
+        <span>represents PDF syllabus not uploaded</span>
       </div>
 
       {/* Delete Confirmation Modal */}
