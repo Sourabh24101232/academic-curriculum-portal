@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Home } from 'lucide-react';
 import Header from './Header';
 import CampusBanner from './CampusBanner';
 import Footer from './Footer';
@@ -33,13 +33,25 @@ const StudentLayout = () => {
       {/* 2. Golden-Amber Subheader Bar (#f6ba38) */}
       <div className="w-full bg-[#f6ba38] border-b border-amber-400 px-4 sm:px-6 lg:px-8 py-2">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link
-            to={isCourseDetails ? '/curriculum' : '/'}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-black transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>{isCourseDetails ? 'Back to Curriculum Page' : 'Back to Home Page'}</span>
-          </Link>
+          {isCourseDetails ? (
+            <Link
+              to="/curriculum"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-black transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back to Curriculum Page</span>
+            </Link>
+          ) : (
+            <a
+              href="https://www.iiitbh.ac.in/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-900 hover:text-black transition-colors"
+            >
+              <Home className="w-4 h-4" />
+              <span>Go to Main Website</span>
+            </a>
+          )}
         </div>
       </div>
 

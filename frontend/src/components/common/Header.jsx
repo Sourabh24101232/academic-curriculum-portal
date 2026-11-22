@@ -1,6 +1,34 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import headerImage from '../../assets/images/header.png';
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import newHeaderImage from '../../assets/images/newHeader.png';
+
+const SOCIAL_LINKS = [
+  {
+    name: 'Facebook',
+    href: 'https://www.facebook.com/iiitbh.ac.in/',
+    icon: Facebook,
+    filled: true
+  },
+  {
+    name: 'Twitter',
+    href: 'https://x.com/iiitbhagalpur',
+    icon: Twitter,
+    filled: true
+  },
+  {
+    name: 'Instagram',
+    href: 'https://www.instagram.com/iiit_bhagalpur_official?igshid=t1twlv86zcrj',
+    icon: Instagram,
+    filled: false
+  },
+  {
+    name: 'LinkedIn',
+    href: 'https://www.linkedin.com/school/iiitbh/posts/?feedView=all',
+    icon: Linkedin,
+    filled: true
+  }
+];
 
 /**
  * IIIT Bhagalpur Circular Crest / Seal (Vector SVG)
@@ -165,16 +193,44 @@ const AzadiMahotsavLogo = ({ className = 'w-24 h-16 sm:w-32 sm:h-20' }) => (
 
 /**
  * Header Component
- * Official institutional header displaying the provided header banner image
- * containing the IIIT Bhagalpur seal, bilingual identity, and Azadi Ka Amrit Mahotsav logo.
+ * Official institutional header featuring:
+ * - Custom blue top bar (#283646) with clickable social media icons
+ * - newHeader.png banner containing the IIIT Bhagalpur seal, bilingual identity, and Azadi Ka Amrit Mahotsav logo
  */
 const Header = () => {
   return (
     <header className="w-full bg-white shadow-sm select-none border-b border-slate-200">
+      {/* 1. Custom Blue Top Bar matching header.png style */}
+      <div className="w-full bg-[#283646]">
+        <div className="w-full max-w-[1920px] mx-auto px-4 sm:px-8 lg:px-12 py-1.5 flex items-center justify-end">
+          <div className="flex items-center gap-3 sm:gap-4">
+            {SOCIAL_LINKS.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-300 hover:text-white transition-colors p-0.5"
+                  aria-label={item.name}
+                  title={item.name}
+                >
+                  <IconComponent
+                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${item.filled ? 'fill-current' : ''}`}
+                  />
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Institutional Bilingual Header Banner (newHeader.png) */}
       <div className="w-full max-w-[1920px] mx-auto">
         <Link to="/" className="block w-full focus:outline-none" title="IIIT Bhagalpur Curriculum Portal">
           <img
-            src={headerImage}
+            src={newHeaderImage}
             alt="Indian Institute of Information Technology Bhagalpur - Academic Curriculum Portal"
             className="w-full h-auto block"
           />

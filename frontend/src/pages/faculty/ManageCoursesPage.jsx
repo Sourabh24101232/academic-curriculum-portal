@@ -25,6 +25,38 @@ const DEFAULT_SEMESTERS = [
   'All Semesters'
 ];
 
+export const FACULTY_FILTER_KEY = 'iiitbh_faculty_filters';
+
+const DEFAULT_FACULTY_FILTERS = {
+  programme: 'BTech',
+  batch: '2024 - 2028',
+  branch: 'CSE',
+  semester: 'Semester 5'
+};
+
+const getInitialFacultyFilters = () => {
+  if (typeof window === 'undefined') return DEFAULT_FACULTY_FILTERS;
+  try {
+    const saved =
+      sessionStorage.getItem(FACULTY_FILTER_KEY) ||
+      localStorage.getItem(FACULTY_FILTER_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object') {
+        return {
+          programme: parsed.programme !== undefined ? parsed.programme : DEFAULT_FACULTY_FILTERS.programme,
+          batch: parsed.batch !== undefined ? parsed.batch : DEFAULT_FACULTY_FILTERS.batch,
+          branch: parsed.branch !== undefined ? parsed.branch : DEFAULT_FACULTY_FILTERS.branch,
+          semester: parsed.semester !== undefined ? parsed.semester : DEFAULT_FACULTY_FILTERS.semester
+        };
+      }
+    }
+  } catch (err) {
+    // fallback on storage error
+  }
+  return DEFAULT_FACULTY_FILTERS;
+};
+
 /**
  * ManageCoursesPage Component
  * Primary faculty course management dashboard.
@@ -42,13 +74,19 @@ const ManageCoursesPage = () => {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
-  // Default filters matching proposed mockup
-  const [filters, setFilters] = useState({
-    programme: 'BTech',
-    batch: '2024 - 2028',
-    branch: 'CSE',
-    semester: 'Semester 5'
-  });
+  // Default filters matching proposed mockup with session/local storage persistence
+  const [filters, setFilters] = useState(getInitialFacultyFilters);
+
+  // Synchronize active filters to browser storage
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      sessionStorage.setItem(FACULTY_FILTER_KEY, JSON.stringify(filters));
+      localStorage.setItem(FACULTY_FILTER_KEY, JSON.stringify(filters));
+    } catch (err) {
+      // ignore
+    }
+  }, [filters]);
 
   // Dynamic filter options state
   const [filterOptions, setFilterOptions] = useState({
@@ -150,6 +188,12 @@ const ManageCoursesPage = () => {
   // 4. Handle Logout Action
   const handleLogout = async () => {
     try {
+      try {
+        sessionStorage.removeItem(FACULTY_FILTER_KEY);
+        localStorage.removeItem(FACULTY_FILTER_KEY);
+      } catch (e) {
+        // ignore
+      }
       await logout();
       navigate('/faculty/login', { replace: true });
     } catch (err) {
