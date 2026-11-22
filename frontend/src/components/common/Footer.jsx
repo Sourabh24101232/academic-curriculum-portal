@@ -49,7 +49,7 @@ const SOCIAL_LINKS = [
 /**
  * Footer Component
  * Matches the official IIIT Bhagalpur website footer with golden headings,
- * contact details, clickable location and social media links, and total visitors counter.
+ * contact details, and clickable location and social media links.
  */
 const Footer = () => {
   return (
@@ -99,14 +99,14 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Column 3: Connect With Us & Visitors */}
+          {/* Column 3: Connect With Us */}
           <div>
             <h3 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-4">
               CONNECT WITH US
             </h3>
             
             {/* Social Icons in Yellow */}
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-3">
               {SOCIAL_LINKS.map((item) => {
                 const IconComponent = item.icon;
                 return (
@@ -122,17 +122,6 @@ const Footer = () => {
                   </a>
                 );
               })}
-            </div>
-
-            {/* Visitors Counter */}
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold tracking-wider text-[#d3b62a] uppercase mb-2">
-                VISITORS
-              </h4>
-              <p className="text-[11px] text-slate-100 flex items-center gap-1.5 font-medium">
-                <span className="text-sm leading-none">&bull;</span>
-                <span>Total Visitors: <strong>4578545</strong></span>
-              </p>
             </div>
           </div>
 
