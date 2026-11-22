@@ -132,12 +132,13 @@ const ManageCoursesPage = () => {
   }, [loadCourses]);
 
   // 3. Handle Course Deletion
-  const handleDeleteCourse = async (id) => {
+  const handleDeleteCourse = async (id, allIds = [id]) => {
     try {
       setIsDeleting(true);
-      await adminApi.deleteCourse(id);
+      const targetIds = Array.isArray(allIds) && allIds.length > 0 ? allIds : [id];
+      await Promise.all(targetIds.map((targetId) => adminApi.deleteCourse(targetId)));
       setNotification('Course offering deleted successfully.');
-      setCourses((prev) => prev.filter((c) => c.id !== id));
+      setCourses((prev) => prev.filter((c) => !targetIds.includes(c.id)));
       setTimeout(() => setNotification(''), 4000);
     } catch (err) {
       setErrorMessage(err.message || 'Failed to delete course offering.');

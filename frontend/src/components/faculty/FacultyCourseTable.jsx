@@ -15,10 +15,32 @@ const FacultyCourseTable = ({
 }) => {
   const [selectedCourseForDelete, setSelectedCourseForDelete] = useState(null);
 
+  // Deduplicate courses by courseCode so courses shared across multiple branches appear only once
+  const uniqueCourses = React.useMemo(() => {
+    if (!courses || courses.length === 0) return [];
+    const map = new Map();
+    for (const c of courses) {
+      const code = (c.courseCode || c.id || '').trim().toUpperCase();
+      if (!map.has(code)) {
+        map.set(code, { ...c, allIds: [c.id] });
+      } else {
+        const existing = map.get(code);
+        existing.allIds.push(c.id);
+        if (!existing.hasOfficialPdf && c.hasOfficialPdf) {
+          map.set(code, { ...c, allIds: existing.allIds });
+        }
+      }
+    }
+    return Array.from(map.values());
+  }, [courses]);
+
   const handleConfirmDelete = async () => {
     if (!selectedCourseForDelete || !onDelete) return;
     try {
-      await onDelete(selectedCourseForDelete.id);
+      await onDelete(
+        selectedCourseForDelete.id,
+        selectedCourseForDelete.allIds || [selectedCourseForDelete.id]
+      );
       setSelectedCourseForDelete(null);
     } catch (err) {
       // Handled by parent container
@@ -36,7 +58,7 @@ const FacultyCourseTable = ({
     );
   }
 
-  if (!courses || courses.length === 0) {
+  if (!uniqueCourses || uniqueCourses.length === 0) {
     return (
       <div className="bg-white rounded-lg border border-slate-200 p-8 text-center shadow-sm">
         <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
@@ -69,7 +91,7 @@ const FacultyCourseTable = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-              {courses.map((course) => (
+              {uniqueCourses.map((course) => (
                 <tr key={course.id} className="hover:bg-slate-50/70 transition-colors">
                   {/* 1. Course Code Column */}
                   <td className="py-3.5 px-4 sm:px-6 font-semibold text-slate-900 align-middle">
